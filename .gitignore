@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Virtual environment folders
+env/
+venv/
+.venv/
+
+# PyTorch Lightning logs and checkpoints
+lightning_logs/
+checkpoints/
+*.ckpt
+
+# Weights and Biases logging folder
+wandb/
+*.wandb
+
+# Python cache and log files
+*.log
+*.cache
+*.pkl
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# VS Code and IDE settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Data files (add specific datasets here if needed)
+data/
+*.h5
+*.csv
+*.npz
+
+# Environment and dependency files
+requirements.txt
+environment.yml
+
+# Sensitive files (e.g., API keys)
+*.secret
+*.key
+
+# Model weights
+*.pt
+*.pth
