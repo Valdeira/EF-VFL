@@ -1,8 +1,7 @@
 import yaml
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import WandbLogger
-import wandb
+import lightning as L
+from lightning import Trainer
+from lightning.pytorch.loggers import WandbLogger
 from argparse import ArgumentParser
 from importlib import import_module
 
@@ -21,7 +20,7 @@ def main():
         config = yaml.safe_load(config_file)
 
     seed = config.get("seed", 42)
-    pl.seed_everything(seed)
+    L.seed_everything(seed)
 
     wandb_logger = WandbLogger(
         project=config["logging"]["project_name"],
@@ -48,21 +47,16 @@ def main():
         devices=config["trainer"]["gpus"],
         log_every_n_steps=1,
     )
-
     trainer.fit(model, data_module)
-
-    wandb.finish()
 
 
 if __name__ == "__main__":
     main()
 
 # TODO
-# [X] compute acc
-# [X] replace current data path by data folder in parent dir
-# [X] understand EFVFL (auto-)folder and replace it with something clearer
-# [] start repo
-# [] adjust optimizer
 # [] use VFL model
 # [] add direct compression module
 # [] add EF compression module
+# [] make readme
+# [] make num_clients an argument (in config)
+# [] rename or delete SimpleNN (centralized model)
