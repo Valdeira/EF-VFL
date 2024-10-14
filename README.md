@@ -15,9 +15,6 @@ Communication overhead is a known bottleneck in federated learning (FL). To addr
 
 If you find this repository useful, please cite our work:
 
-<details>
-<summary>BibTeX</summary>
-
 ```bibtex
 @article{valdeira2024communication,
   title={Communication-efficient Vertical Federated Learning via Compressed Error Feedback},
