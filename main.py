@@ -1,7 +1,7 @@
 import yaml
-import lightning as L
-from lightning import Trainer
-from lightning.pytorch.loggers import WandbLogger
+import pytorch_lightning as L
+from pytorch_lightning import Trainer
+from pytorch_lightning.loggers import WandbLogger
 from argparse import ArgumentParser
 from importlib import import_module
 
@@ -13,10 +13,10 @@ def load_module(module_path, module_name):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument("--config", type=str, default="configs/config.yaml", help="Path to the config file")
+    parser.add_argument("--config", type=str, default="mnist_fullbatch_svfl.yaml", help="Path to the config file for an experiment.")
     args = parser.parse_args()
 
-    with open(args.config, 'r') as config_file:
+    with open("configs/" + args.config, 'r') as config_file:
         config = yaml.safe_load(config_file)
 
     seed = config.get("seed", 42)
@@ -54,9 +54,13 @@ if __name__ == "__main__":
     main()
 
 # TODO
-# [] use VFL model
-# [] add direct compression module
-# [] add EF compression module
+# [X] CVFL (add qsgd and make compressor selectable)
+# [X] make compressor None select SVFL; compressor is None replaces compress == True
+# [] make optimizer an argument
+# [] compute gradient squared norm
+# [] compute communication cost
+# [] compute noncompressed train metrics
+# [] EFVFL
 # [] make readme
-# [] make num_clients an argument (in config)
-# [] rename or delete SimpleNN (centralized model)
+# [] get arg to run w/o wandb
+# [] handle multiple seeds

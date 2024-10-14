@@ -1,0 +1,30 @@
+seed: 42
+
+logging:
+  project_name: "EFVFL"
+  experiment_name: "mnist-fullbatch-cvfl-2b"
+
+data:
+  module_path: "data.mnist"
+  module_name: "MNISTDataModule"
+  params:
+    data_dir: "../data"
+    num_workers: 4
+    val_split: 0.1
+
+model:
+  module_path: "models.mnist_model"
+  module_name: "ShallowSplitNN"
+  params:
+    num_clients: 4
+    input_size: 784
+    cut_size: 16
+    num_classes: 10
+    lr: 1.0
+    momentum: 0.0
+    compressor: "qsgd"
+    compression_parameter: 2
+
+trainer:
+  max_epochs: 100
+  gpus: [3]
