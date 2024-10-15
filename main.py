@@ -70,11 +70,9 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-
 # TODO
 # [] make plots that look like the ones in the paper (but replace "test" in the plots with "validation")
-# [] compute gradient squared norm
+# [] include "metrics to compute" argument in config -> in particular: we only care about computing sqd gd norm for mnist_fullbatch experiments
 # . are test metrics not being saved?
 # why can't i plot comm cost vs val acc
 # create a table for final test metrics

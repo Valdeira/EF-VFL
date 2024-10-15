@@ -68,6 +68,8 @@ class ShallowSplitNN(L.LightningModule):
         self.bits_per_element = torch.zeros(1).element_size() * 8
         self.n_bits_per_round_per_client = self._calculate_n_bits(compressor, compression_parameter)
         self.cumulative_batches = 0
+
+        self.initial_grad_norm = None
         
         self.save_hyperparameters()
 
@@ -146,10 +148,10 @@ class ShallowSplitNN(L.LightningModule):
 
     def on_train_epoch_end(self):
         """Compute and log metrics on noncompressed forward pass for the training data."""
-        self.eval()
 
         train_acc = Accuracy(task="multiclass", num_classes=self.hparams.num_classes).to(self.device)
         total_loss = 0.0
+        total_grad_squared_norm = 0.0
 
         for batch in self.trainer.train_dataloader:
             x_train, y_train, _ = batch
@@ -163,13 +165,27 @@ class ShallowSplitNN(L.LightningModule):
             train_acc.update(y_train_hat, y_train)
             total_loss += loss.item()
 
+            self.zero_grad()
+            loss.backward()
+
+            grad_squared_norm = 0.0
+            for param in self.parameters():
+                if param.grad is not None:
+                    grad_squared_norm += (param.grad.norm() ** 2).item()
+
+            total_grad_squared_norm += grad_squared_norm
+
         avg_loss = total_loss / len(self.trainer.train_dataloader)
         train_acc_value = train_acc.compute()
 
+        if self.current_epoch == 0:
+            self.initial_grad_norm = total_grad_squared_norm
+
+        normalized_grad_squared_norm = total_grad_squared_norm / self.initial_grad_norm
+
         self.log("train_loss", avg_loss, on_epoch=True, prog_bar=True)
         self.log("train_acc", train_acc_value, on_epoch=True, prog_bar=True)
-
-        self.train()
+        self.log("grad_squared_norm", normalized_grad_squared_norm, on_epoch=True, prog_bar=True)
 
     def validation_step(self, batch, batch_idx):
         """Compute validation loss and accuracy."""
