@@ -81,18 +81,18 @@ class ShallowSplitNN(L.LightningModule):
         return self.fusion_model(representations)
 
     def training_step(self, batch, batch_idx):
+        """Perform training using compressed representations, no metrics are logged here."""
         x, y, indices = batch
 
         optimizers = self.optimizers()
         client_optimizers = optimizers[:self.num_clients]
         fusion_optimizer = optimizers[self.num_clients]
-        
+
         compressed_representations = [
-            model(self.get_feature_block(x, i), apply_compression=True, indices=indices, epoch=self.current_epoch) 
+            model(self.get_feature_block(x, i), apply_compression=True, indices=indices, epoch=self.current_epoch)
             for i, model in enumerate(self.representation_models)
         ]
 
-        # Case 1: Use compressed representations for training all models
         if self.private_labels:
             y_hat = self.fusion_model(compressed_representations)
             total_loss = F.cross_entropy(y_hat, y)
@@ -100,8 +100,6 @@ class ShallowSplitNN(L.LightningModule):
             for optimizer in optimizers:
                 optimizer.step()
                 optimizer.zero_grad()
-
-        # Case 2: Each client uses its own non-compressed representation and compressed representations for others
         else:
             client_losses = []
             for i, (model, optimizer) in enumerate(zip(self.representation_models, client_optimizers)):
@@ -128,13 +126,10 @@ class ShallowSplitNN(L.LightningModule):
         
         n_mbytes = (self.n_bits_per_round_per_client * self.cumulative_batches * self.num_clients) / 8e6
 
-        self.train_accuracy.update(y_hat, y)
-        self.log("train_loss", total_loss, on_epoch=True, prog_bar=True)
-        self.log("train_acc", self.train_accuracy, on_epoch=True, prog_bar=True)
         self.log('communication_cost', n_mbytes, prog_bar=True)
 
         return total_loss
-    
+
     def _calculate_n_bits(self, compressor, compression_parameter):
         if compressor is None:
             return self.cut_size * self.bits_per_element
@@ -144,11 +139,40 @@ class ShallowSplitNN(L.LightningModule):
             return self.bits_per_element + self.cut_size * (1 + compression_parameter)
         else:
             raise ValueError(f"Unknown compressor: {compressor}")
-    
+
     def on_train_batch_end(self, outputs, batch, batch_idx):
+        """Tracks the cumulative batches for communication cost logging."""
         self.cumulative_batches += 1
 
+    def on_train_epoch_end(self):
+        """Compute and log metrics on noncompressed forward pass for the training data."""
+        self.eval()
+
+        train_acc = Accuracy(task="multiclass", num_classes=self.hparams.num_classes).to(self.device)
+        total_loss = 0.0
+
+        for batch in self.trainer.train_dataloader:
+            x_train, y_train, _ = batch
+
+            x_train = x_train.to(self.device)
+            y_train = y_train.to(self.device)
+
+            y_train_hat = self(x_train)
+            loss = F.cross_entropy(y_train_hat, y_train)
+
+            train_acc.update(y_train_hat, y_train)
+            total_loss += loss.item()
+
+        avg_loss = total_loss / len(self.trainer.train_dataloader)
+        train_acc_value = train_acc.compute()
+
+        self.log("train_loss", avg_loss, on_epoch=True, prog_bar=True)
+        self.log("train_acc", train_acc_value, on_epoch=True, prog_bar=True)
+
+        self.train()
+
     def validation_step(self, batch, batch_idx):
+        """Compute validation loss and accuracy."""
         x, y, _ = batch
 
         y_hat = self(x)
@@ -160,6 +184,7 @@ class ShallowSplitNN(L.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
+        """Compute test loss and accuracy."""
         x, y, _ = batch
 
         y_hat = self(x)
@@ -171,11 +196,13 @@ class ShallowSplitNN(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
+        """Configure optimizers for the model."""
         client_optimizers = [torch.optim.SGD(model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum) for model in self.representation_models]
         fusion_optimizer = torch.optim.SGD(self.fusion_model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum)
         return client_optimizers + [fusion_optimizer]
-    
+
     def get_feature_block(self, x, i):
+        """Get a quadrant from the input data corresponding to a specific client."""
         B, C, H, W = x.shape
         
         if i < 0 or i > 3:
@@ -195,3 +222,4 @@ class ShallowSplitNN(L.LightningModule):
         flat_quadrant = quadrant.reshape(quadrant.size(0), -1)
 
         return flat_quadrant
+

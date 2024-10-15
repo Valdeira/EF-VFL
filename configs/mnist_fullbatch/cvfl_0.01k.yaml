@@ -1,4 +1,4 @@
-seed: [0, 1, 2, 3, 4]
+seed: [0, 1] # [0, 1, 2, 3, 4]
 
 logging:
   project_name: "EFVFL"

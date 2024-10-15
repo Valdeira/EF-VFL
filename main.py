@@ -73,10 +73,10 @@ if __name__ == "__main__":
 
 
 # TODO
-# [] compute noncompressed train metrics (do not log in the training_step;
-#    training_step only for training and log metrics for train data in the validation_step, test_step, or some other appropriate method)
 # [] make plots that look like the ones in the paper (but replace "test" in the plots with "validation")
 # [] compute gradient squared norm
 # . are test metrics not being saved?
 # why can't i plot comm cost vs val acc
 # create a table for final test metrics
+
+# TODO adjust config files from debugging [0, 1] to final [0, 1, 2, 3, 4]
