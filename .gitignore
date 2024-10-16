@@ -35,12 +35,6 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
-# Data files (add specific datasets here if needed)
-data/
-*.h5
-*.csv
-*.npz
-
 # Sensitive files (e.g., API keys)
 *.secret
 *.key
@@ -49,8 +43,6 @@ data/
 *.pt
 *.pth
 
-# Ignore everything in the results folder
+# Everything in the results folder except plot.py
 results/*
-
-# But do not ignore results/plot.py
 !results/plot.py

@@ -19,6 +19,12 @@ To set up the environment, run the following command:
 conda env create -f environment.yml
 ```
 
+Next, activate the environment:
+
+```bash
+conda activate EFVFL
+```
+
 ### Citation
 
 If you find this repository useful, please cite [our work](https://arxiv.org/abs/2406.14420):
