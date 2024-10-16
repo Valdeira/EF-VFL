@@ -41,10 +41,6 @@ data/
 *.csv
 *.npz
 
-# Environment and dependency files
-requirements.txt
-environment.yml
-
 # Sensitive files (e.g., API keys)
 *.secret
 *.key
@@ -52,3 +48,9 @@ environment.yml
 # Model weights
 *.pt
 *.pth
+
+# Ignore everything in the results folder
+results/*
+
+# But do not ignore results/plot.py
+!results/plot.py
