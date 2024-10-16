@@ -12,6 +12,8 @@ Communication overhead is a known bottleneck in federated learning (FL). To addr
 <!-- explain usage -->
 ... this assumes you have a "data" directory above the project directory.
 
+Include "conda env create -f environment.yml" in instructions
+
 ### Citation
 
 If you find this repository useful, please cite [our work](https://arxiv.org/abs/2406.14420):
