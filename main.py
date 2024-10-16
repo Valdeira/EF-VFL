@@ -45,12 +45,13 @@ def main():
         data_module.prepare_data()
         data_module.setup(stage='fit')
         num_samples = data_module.num_train_samples
+        batch_size = data_module.train_dataloader().batch_size
 
         # Load the model
         model_module_path = config["model"]["module_path"]
         model_module_name = config["model"]["module_name"]
         model_class = load_module(model_module_path, model_module_name)
-        model = model_class(**config["model"]["params"], num_samples=num_samples)
+        model = model_class(**config["model"]["params"], num_samples=num_samples, batch_size=batch_size)
 
         # Initialize the Trainer
         trainer = Trainer(
@@ -71,10 +72,8 @@ if __name__ == "__main__":
     main()
 
 # TODO
-# [] make plots that look like the ones in the paper (but replace "test" in the plots with "validation")
+# [] make plots more similar to the ones in the paper (but replace "test" in the plots with "validation")
 # [] include "metrics to compute" argument in config -> in particular: we only care about computing sqd gd norm for mnist_fullbatch experiments
-# . are test metrics not being saved?
+# . test metrics are not being saved
 # why can't i plot comm cost vs val acc
 # create a table for final test metrics
-
-# TODO adjust config files from debugging [0, 1] to final [0, 1, 2, 3, 4]

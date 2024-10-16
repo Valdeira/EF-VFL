@@ -1,8 +1,8 @@
-seed: [0, 1, 2] # [0, 1, 2, 3, 4]
+seed: [0] # [0, 1, 2, 3, 4]
 
 logging:
   project_name: "EFVFL"
-  experiment_name: "mnist-fullbatch-cvfl-0.01k"
+  experiment_name: "mnist-fullbatch-efvfl-0.1k"
 
 data:
   module_path: "data.mnist"
@@ -23,9 +23,9 @@ model:
     num_classes: 10
     lr: 1.0
     momentum: 0.0
-    compression_type: "direct"
+    compression_type: "ef"
     compressor: "topk"
-    compression_parameter: 0.01
+    compression_parameter: 0.1
 
 trainer:
   max_epochs: 100

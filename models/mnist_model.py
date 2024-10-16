@@ -7,7 +7,7 @@ from models.compressors import EFCompressor, TopKCompressor, QSGDCompressor
 
 
 compressors_d = {"topk": TopKCompressor, "qsgd": QSGDCompressor}
-
+# TODO fix mismatch in comm_cost (caused by counting the cost of a single sample (cut_size) when it should be for the batch)
 
 class RepresentationModel(nn.Module):
     def __init__(self, input_size=196, cut_size=16, compressor=None, compression_parameter=None, compression_type=None, num_samples=None):
@@ -40,30 +40,39 @@ class RepresentationModel(nn.Module):
 
 
 class FusionModel(nn.Module):
-    def __init__(self, cut_size=16, output_size=10):
+    def __init__(self, cut_size, output_size, aggregation_mechanism, num_clients):
         super().__init__()
-        self.fc = nn.Linear(cut_size, output_size)
+        self.aggregation_mechanism = aggregation_mechanism
+        fusion_input_size = cut_size * num_clients if aggregation_mechanism == "conc" else cut_size
+        self.fc = nn.Linear(fusion_input_size, output_size)
 
     def forward(self, x):
-        return self.fc(torch.stack(x).mean(dim=0))
+        if self.aggregation_mechanism == "conc":
+            aggregated_x = torch.cat(x, dim=1)
+        elif self.aggregation_mechanism == "mean":
+            aggregated_x = torch.stack(x).mean(dim=0)
+        elif self.aggregation_mechanism == "sum":
+            aggregated_x = torch.stack(x).sum(dim=0)
+        return self.fc(aggregated_x)
 
 
 class ShallowSplitNN(L.LightningModule):
-    def __init__(self, input_size=784, cut_size=16, num_classes=10, lr=1.0, momentum=0.0, num_clients=4, 
-                 compressor=None, compression_parameter=None, compression_type=None, private_labels=False, num_samples=None):
+    def __init__(self, input_size=784, cut_size=16, num_classes=10, lr=1.0, momentum=0.0, num_clients=4, aggregation_mechanism="conc",
+                 compressor=None, compression_parameter=None, compression_type=None, private_labels=False, num_samples=None, batch_size=None):
         super().__init__()
         self.num_clients = num_clients
         self.private_labels = private_labels
         self.automatic_optimization = False
         self.local_input_size = input_size // num_clients
         self.cut_size = cut_size
+        self.batch_size = batch_size
 
         self.representation_models = nn.ModuleList([
             RepresentationModel(self.local_input_size, cut_size, compressor=compressor,
                                 compression_parameter=compression_parameter, compression_type=compression_type, num_samples=num_samples) 
             for _ in range(self.num_clients)
         ])
-        self.fusion_model = FusionModel(cut_size, num_classes)
+        self.fusion_model = FusionModel(cut_size, num_classes, aggregation_mechanism, num_clients)
 
         self.bits_per_element = torch.zeros(1).element_size() * 8
         self.n_bits_per_round_per_client = self._calculate_n_bits(compressor, compression_parameter)
@@ -128,17 +137,17 @@ class ShallowSplitNN(L.LightningModule):
         
         n_mbytes = (self.n_bits_per_round_per_client * self.cumulative_batches * self.num_clients) / 8e6
 
-        self.log('communication_cost', n_mbytes, prog_bar=True)
+        self.log('comm_cost', n_mbytes, prog_bar=True)
 
         return total_loss
 
     def _calculate_n_bits(self, compressor, compression_parameter):
         if compressor is None:
-            return self.cut_size * self.bits_per_element
+            return self.cut_size * self.batch_size * self.bits_per_element
         elif compressor == 'topk':
-            return self.cut_size * self.bits_per_element * compression_parameter
+            return self.cut_size * self.batch_size * self.bits_per_element * compression_parameter
         elif compressor == 'qsgd':
-            return self.bits_per_element + self.cut_size * (1 + compression_parameter)
+            return self.bits_per_element + self.cut_size * self.batch_size * (1 + compression_parameter)
         else:
             raise ValueError(f"Unknown compressor: {compressor}")
 

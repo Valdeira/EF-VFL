@@ -14,7 +14,7 @@ Communication overhead is a known bottleneck in federated learning (FL). To addr
 
 ### Citation
 
-If you find this repository useful, please cite our [work](https://arxiv.org/abs/2406.14420):
+If you find this repository useful, please cite [our work](https://arxiv.org/abs/2406.14420):
 
 ```bibtex
 @article{valdeira2024communication,
