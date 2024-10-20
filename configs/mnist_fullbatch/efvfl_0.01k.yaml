@@ -1,5 +1,3 @@
-seed: [0, 1, 2] # [0, 1, 2, 3, 4]
-
 logging:
   project_name: "EFVFL"
   experiment_name: "mnist-fullbatch-efvfl-0.01k"
@@ -10,7 +8,6 @@ data:
   params:
     data_dir: "../data"
     num_workers: 4
-    val_split: 0.1
 
 model:
   module_path: "models.mnist_model"
@@ -18,10 +15,10 @@ model:
   params:
     num_clients: 4
     input_size: 784
-    cut_size: 16
-    aggregation_mechanism: "conc"
+    cut_size: 128
+    aggregation_mechanism: "sum"
     num_classes: 10
-    lr: 1.0
+    lr: 100.0
     momentum: 0.0
     compression_type: "ef"
     compressor: "topk"
@@ -29,4 +26,3 @@ model:
 
 trainer:
   max_epochs: 100
-  gpus: [3]

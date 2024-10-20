@@ -11,12 +11,10 @@ Communication overhead is a known bottleneck in federated learning (FL). To addr
 
 ### Usage
 
-The following instructions assume you have a "data" directory above the project directory.
-
 To set up the environment, run the following command:
 
 ```bash
-conda env create -f environment.yml
+conda env create -f environment.yaml
 ```
 
 Next, activate the environment:
@@ -24,6 +22,8 @@ Next, activate the environment:
 ```bash
 conda activate EFVFL
 ```
+
+To run the experiments, ...
 
 ### Citation
 

@@ -2,7 +2,6 @@ import wandb
 import re
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import os
 
 
@@ -27,6 +26,7 @@ def plot(project_name, run_names, x_metric, y_metric, plot_name, res_path):
         os.makedirs(res_path)
 
     runs_data = {}
+    base_name_compression_type_map = {}
     for run_name in run_names:
         # Get the correct run ID based on the run name
         run_id = run_name_to_id.get(run_name)
@@ -36,12 +36,6 @@ def plot(project_name, run_names, x_metric, y_metric, plot_name, res_path):
 
         # Fetch the run using its ID
         run = api.run(f"{project_name}/{run_id}")
-        
-        # Fetch the compression_type from the run's config
-        compression_type = run.config.get('compression_type')
-        
-        # Get the corresponding color based on the compression_type
-        color = compressor_color_map[compression_type]
         
         history = run.history()
 
@@ -61,7 +55,9 @@ def plot(project_name, run_names, x_metric, y_metric, plot_name, res_path):
         # Add the x and y values to the group of runs with the same base name
         if base_name not in runs_data:
             runs_data[base_name] = []
-        runs_data[base_name].append((x_values, y_values, color))
+        runs_data[base_name].append((x_values, y_values))
+        
+        base_name_compression_type_map[base_name] = run.config.get('compression_type')
 
     # Initialize a variable to track the minimum of the maximum x_values
     min_max_x_value = float('inf')
@@ -71,7 +67,7 @@ def plot(project_name, run_names, x_metric, y_metric, plot_name, res_path):
     # Now plot the mean and std deviation for each group
     for base_name, data in runs_data.items():
         # Stack the y_values to compute mean and std deviation
-        y_values_list = [y for _, y, _ in data]
+        y_values_list = [y for _, y in data]
 
         y_values_array = np.array(y_values_list)
         y_mean = np.mean(y_values_array, axis=0)
@@ -84,19 +80,17 @@ def plot(project_name, run_names, x_metric, y_metric, plot_name, res_path):
         max_x_value = max(x_values)
         min_max_x_value = min(min_max_x_value, max_x_value)
 
-        # Use the color from the first run in the group (compressor_type is shared within the group)
-        color = data[0][2]
+        # Fetch color, method_name, and marker using the compression_type associated with the base_name
+        compression_type = base_name_compression_type_map[base_name]
+        color = compressor_color_map[compression_type]
+        method_name = compressor_method_map[compression_type]
+        marker = compressor_marker_map[compression_type]
 
         marker_indices = np.linspace(0, len(x_values) - 1, num_markers, dtype=int)
 
         # Plot the mean and standard deviation as shaded region
-        method_name = compressor_method_map[compression_type]
-        marker = compressor_marker_map[compression_type]
         plt.plot(x_values, y_mean, label=method_name, marker=marker, markevery=marker_indices)
         
-        # epsilon = 1e-4
-        # lower_bound = np.maximum(y_mean - y_std, epsilon)
-        # upper_bound = y_mean + y_std
         plt.fill_between(x_values, y_mean - y_std, y_mean + y_std, color=color, alpha=0.2)
 
     # After the loop, set the right x-axis limit to the minimum of the maximum x_values
@@ -112,14 +106,15 @@ def plot(project_name, run_names, x_metric, y_metric, plot_name, res_path):
     plt.savefig(f"{res_path}/{y_metric}_per_{x_metric}.pdf")
     plt.close()
 
+
 if __name__ == '__main__':
 
     project_name = "pvaldeira-team/efvfl"
     
     run_names = [
                 "mnist-fullbatch-svfl-s0",
-                "mnist-fullbatch-cvfl-0.1k-s0",
-                "mnist-fullbatch-efvfl-0.1k-s0",
+                "mnist-fullbatch-cvfl-0.01k-s0",
+                "mnist-fullbatch-efvfl-0.01k-s0",
                 ]
     
     x_metric = "epoch"  # "epoch" | "comm_cost"

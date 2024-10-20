@@ -4,26 +4,25 @@ import torch.nn as nn
 
 class EFCompressor(nn.Module):
     
-    def __init__(self, compressor, cut_dim, num_samples):
+    def __init__(self, direct_compressor, shape):
         super().__init__()
-        self.compressor = compressor
-        self.cut_dim = cut_dim
-        self.num_samples = num_samples
+        self.direct_compressor = direct_compressor
+        self.shape = shape
         self.state = None
         self.register_full_backward_hook(self._backward_hook)
 
     def forward(self, x, indices, epoch):
-        
         if self.state is None:
-            self.state = torch.zeros(self.num_samples, self.cut_dim, requires_grad=False, device=x.device)
+            self.state = torch.zeros(*self.shape, requires_grad=False, device=x.device)
 
         state_detached = self.state.detach()
         updated_state = state_detached.clone()
         if epoch == 0:
-            updated_state[indices] = self.compressor(x)
+            updated_state[indices] = self.direct_compressor(x)
         else:
-            updated_state[indices] = state_detached[indices] + self.compressor(x - state_detached[indices])
+            updated_state[indices] = state_detached[indices] + self.direct_compressor(x - state_detached[indices])
         self.state = updated_state.detach()
+
         return updated_state[indices]
 
     def _backward_hook(self, module, grad_input, grad_output):
@@ -31,6 +30,7 @@ class EFCompressor(nn.Module):
 
 
 class TopKCompressor(nn.Module):
+    
     def __init__(self, compression_ratio):
         super().__init__()
         self.compression_ratio = compression_ratio
@@ -50,7 +50,7 @@ class TopKCompressor(nn.Module):
 
 
 class QSGDCompressor(nn.Module):
-    '''Stochastic quantization -> a (biased) normalized version of the QSGD compressor'''
+    '''A biased (normalized) version of the QSGD compressor'''
 
     def __init__(self, n_bits):
         super().__init__()

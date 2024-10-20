@@ -1,3 +1,4 @@
+import ast
 import yaml
 import pytorch_lightning as L
 from pytorch_lightning import Trainer
@@ -6,22 +7,18 @@ from argparse import ArgumentParser
 from importlib import import_module
 import wandb
 
+
 def load_module(module_path, module_name):
     spec = import_module(module_path)
     return getattr(spec, module_name)
 
-def main():
-    parser = ArgumentParser()
-    parser.add_argument("--config", type=str, default="mnist_fullbatch/svfl.yaml", help="Path to the config file for an experiment.")
-    parser.add_argument("--no_wandb", action="store_true", help="Disable wandb logging.")
-    args = parser.parse_args()
+
+def main(args):
 
     with open("configs/" + args.config, 'r') as config_file:
         config = yaml.safe_load(config_file)
 
-    seeds = config.get("seed", [0, 1, 2, 3, 4])
-
-    for seed in seeds:
+    for seed in args.seeds:
         L.seed_everything(seed)
 
         if not args.no_wandb:
@@ -34,8 +31,6 @@ def main():
         else:
             wandb_logger = None
 
-        print(f"wandb_logger.experiment.name: {wandb_logger.experiment.name if wandb_logger else 'No Wandb'}")
-
         # Load the data module
         data_module_path = config["data"]["module_path"]
         data_module_name = config["data"]["module_name"]
@@ -44,6 +39,7 @@ def main():
 
         data_module.prepare_data()
         data_module.setup(stage='fit')
+        data_module.setup(stage='validate')
         num_samples = data_module.num_train_samples
         batch_size = data_module.train_dataloader().batch_size
 
@@ -58,22 +54,26 @@ def main():
             max_epochs=config["trainer"]["max_epochs"],
             logger=wandb_logger if wandb_logger is not None else False,
             accelerator='gpu',
-            devices=config["trainer"]["gpus"],
+            devices=args.gpu,
             log_every_n_steps=1,
         )
-        # Train the model
         trainer.fit(model, data_module)
-        # trainer.test(model, data_module)
+        trainer.test(model, data_module)
 
         if wandb_logger:
             wandb.finish()
 
 if __name__ == "__main__":
-    main()
+    
+    parser = ArgumentParser()
+    parser.add_argument("--config", type=str, default="mnist_fullbatch/svfl.yaml", help="Path to the config file for an experiment.")
+    parser.add_argument('--gpu', type=lambda s: [int(s)], required=True, help='GPU device id.')
+    parser.add_argument('--seeds', type=int, nargs='+', help='List of seed values', required=True)
+    parser.add_argument("--no_wandb", action="store_true", help="Disable wandb logging.")
+    args = parser.parse_args()
 
-# TODO
-# [] make plots more similar to the ones in the paper (but replace "test" in the plots with "validation")
+    main(args)
+
+# TODO plot train and validation metrics; use test metrics for table.
 # [] include "metrics to compute" argument in config -> in particular: we only care about computing sqd gd norm for mnist_fullbatch experiments
-# . test metrics are not being saved
-# why can't i plot comm cost vs val acc
-# create a table for final test metrics
+# TODO understand why compressed train metrics outperform noncompressed ones

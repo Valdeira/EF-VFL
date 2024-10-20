@@ -17,12 +17,12 @@ class DatasetWithIndex:
 
 
 class MNISTDataModule(L.LightningDataModule):
-    def __init__(self, data_dir="../data", batch_size=None, num_workers=4, val_split=0.2):
+    def __init__(self, data_dir="../data", batch_size=None, num_workers=4, val_test_split=0.5):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.val_split = val_split
+        self.val_test_split = val_test_split
         self.num_train_samples = None
 
         self.transform = transforms.Compose([
@@ -36,23 +36,16 @@ class MNISTDataModule(L.LightningDataModule):
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            full_train = MNIST(self.data_dir, train=True, transform=self.transform, download=False)
-            
-            # Split first
-            val_size = int(len(full_train) * self.val_split)
-            train_size = len(full_train) - val_size
-            train_dataset, val_dataset = random_split(full_train, [train_size, val_size])
-            
-            # Wrap the subsets with DatasetWithIndex
-            self.train_dataset = DatasetWithIndex(train_dataset)
-            self.val_dataset = DatasetWithIndex(val_dataset)
+            self.train_dataset = DatasetWithIndex(MNIST(self.data_dir, train=True, transform=self.transform, download=False))
+            self.num_train_samples = len(self.train_dataset)
 
-        self.num_train_samples = len(self.train_dataset)
-
-
-        if stage == 'test' or stage is None:
+        if stage == 'validate' or stage == 'test' or stage is None:
             test_data = MNIST(self.data_dir, train=False, transform=self.transform, download=False)
-            self.test_dataset = DatasetWithIndex(test_data)
+            test_size = int(len(test_data) * self.val_test_split)
+            val_size = len(test_data) - test_size
+            val_dataset, test_dataset = random_split(test_data, [val_size, test_size])
+            self.val_dataset = DatasetWithIndex(val_dataset)
+            self.test_dataset = DatasetWithIndex(test_dataset)
 
     def train_dataloader(self):
         batch_size = len(self.train_dataset) if self.batch_size is None else self.batch_size

@@ -1,6 +1,6 @@
 logging:
   project_name: "EFVFL"
-  experiment_name: "mnist-fullbatch-cvfl-2b"
+  experiment_name: "mnist-fullbatch-cvfl-5b"
 
 data:
   module_path: "data.mnist"
@@ -22,7 +22,7 @@ model:
     momentum: 0.0
     compression_type: "direct"
     compressor: "qsgd"
-    compression_parameter: 2
+    compression_parameter: 5
 
 trainer:
   max_epochs: 100
