@@ -70,8 +70,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
-
-# TODO
-# [] make repo public
-# [] use test metrics for table
-# [] include "metrics to compute" argument in config -> in particular: we only care about computing sqd gd norm for mnist_fullbatch experiments
