@@ -111,7 +111,7 @@ class ShallowSplitNN(L.LightningModule):
                 optimizers[i].step()
                 optimizers[i].zero_grad()
         
-        n_mbytes = (self.n_bits_per_round_per_client * self.cumulative_batches * self.hparams.num_clients) / 8e6
+        n_mbytes = (self.n_bits_per_round_per_client * (self.cumulative_batches + 1) * self.hparams.num_clients) / 8e6
         self.log('comm_cost', n_mbytes, prog_bar=True)
 
     def _calculate_n_bits(self, compressor, compression_parameter):

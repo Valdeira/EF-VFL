@@ -30,7 +30,6 @@ def main(args):
         else:
             wandb_logger = None
 
-        # Load the data module
         data_module_path = config["data"]["module_path"]
         data_module_name = config["data"]["module_name"]
         data_module_class = load_module(data_module_path, data_module_name)
@@ -42,13 +41,11 @@ def main(args):
         num_samples = data_module.num_train_samples
         batch_size = data_module.train_dataloader().batch_size
 
-        # Load the model
         model_module_path = config["model"]["module_path"]
         model_module_name = config["model"]["module_name"]
         model_class = load_module(model_module_path, model_module_name)
         model = model_class(**config["model"]["params"], num_samples=num_samples, batch_size=batch_size)
 
-        # Initialize the Trainer
         trainer = Trainer(
             max_epochs=config["trainer"]["max_epochs"],
             logger=wandb_logger if wandb_logger is not None else False,
@@ -56,6 +53,7 @@ def main(args):
             devices=args.gpu,
             log_every_n_steps=1,
         )
+        trainer.validate(model, data_module)
         trainer.fit(model, data_module)
         trainer.test(model, data_module)
 
@@ -74,11 +72,6 @@ if __name__ == "__main__":
     main(args)
 
 # TODO
-# [X] plot train and validation metrics
-# [] use test metrics for table
-# [] compute metrics at iteration 0
-# [] finish and polish plot.py
-# [] polish main
-# [] avoid checkpoints
 # [] make repo public
+# [] use test metrics for table
 # [] include "metrics to compute" argument in config -> in particular: we only care about computing sqd gd norm for mnist_fullbatch experiments

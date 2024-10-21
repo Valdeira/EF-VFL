@@ -2,21 +2,20 @@ import wandb
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
 import os
 
-# Configuration mappings
 COMPRESSOR_COLOR_MAP = {None: 'blue', 'direct': 'orange', 'ef': 'green'}
 COMPRESSOR_MARKER_MAP = {None: 's', 'direct': 'o', 'ef': '^'}
-COMPRESSOR_METHOD_MAP = {None: 'SVFL', 'direct': 'CVFL', 'ef': 'EFVFL'}
+COMPRESSOR_METHOD_MAP = {None: 'SVFL', 'direct': 'CVFL', 'ef': 'EF-VFL'}
 METRICS_MAP = {
     "epoch": "Epoch",
     "comm_cost": "Communications (MB)",
-    "grad_squared_norm": "Train gradient squared norm",
-    "val_acc": "Validation accuracy",
+    "grad_squared_norm": "(log) Train gradient squared norm",
+    "val_acc": "Validation accuracy (%)",
 }
 
 def fetch_run_data(api, project_name, run_name, x_metric, y_metric):
-    """Fetch x and y metric data from a given run."""
     run = api.run(f"{project_name}/{run_name}")
     history = run.history()
 
@@ -28,15 +27,16 @@ def fetch_run_data(api, project_name, run_name, x_metric, y_metric):
 
 def clean_data(x_metric, x_values, y_values):
     if x_metric == "comm_cost":
+        x_values[0] = 0.0
         x_values = x_values[~np.isnan(x_values)]
     elif x_metric == "epoch":
-        x_values = x_values[::3] + 1  # Adjust epoch values
-        x_values = x_values[:-1] # Drop the "epoch" corresponding to test metrics
+        x_values = x_values[1:-1:3] + 1  # remove initial and final metrics (val and test)
     y_values = y_values[~np.isnan(y_values)]
+    if y_metric == "val_acc":
+        y_values *= 100
     return x_values, y_values
 
 def group_runs_by_base_name(run_names, run_name_to_id, api, project_name, x_metric, y_metric):
-    """Group runs by their base name and fetch corresponding data."""
     pattern = re.compile(r"-s\d+$")
     runs_data = {}
     base_name_compression_type_map = {}
@@ -58,7 +58,6 @@ def group_runs_by_base_name(run_names, run_name_to_id, api, project_name, x_metr
     return runs_data, base_name_compression_type_map
 
 def plot_mean_std(x_values, y_values_list, color, method_name, marker, num_markers):
-    """Plot mean and std deviation for a set of y values."""
     y_values_array = np.array(y_values_list)
     if y_metric in ["grad_squared_norm", "train_loss", "val_loss"]:
         y_values_array = np.log10(y_values_array)
@@ -69,20 +68,20 @@ def plot_mean_std(x_values, y_values_list, color, method_name, marker, num_marke
     plt.plot(x_values, y_mean, label=method_name, marker=marker, markevery=marker_indices)
     plt.fill_between(x_values, y_mean - y_std, y_mean + y_std, color=color, alpha=0.2)
 
-def save_plot(res_path, x_metric, y_metric, plot_name, min_max_x_value):
-    """Save the generated plot."""
+def save_plot(res_path, x_metric, y_metric, min_max_x_value):
     plt.xlim(left=0, right=min_max_x_value)
-    plt.xlabel(METRICS_MAP[x_metric])
-    plt.ylabel(METRICS_MAP[y_metric])
-    plt.legend()
-    plt.title(plot_name)
+    plt.xlabel(METRICS_MAP[x_metric], fontsize=16)
+    plt.ylabel(METRICS_MAP[y_metric], fontsize=16)
+    plt.legend(loc='best', fontsize=15)
     plt.grid(True)
-    # if y_metric in ["grad_squared_norm", "train_loss", "val_loss"]:
-    #     plt.yscale('log')
+    plt.tick_params(axis='both', which='major', labelsize=14)
+    plt.tight_layout()
+    if y_metric in ["grad_squared_norm", "train_loss", "val_loss"]:
+        plt.gca().yaxis.set_major_formatter(StrMethodFormatter(r'$10^{{{x:.1f}}}$'))
     plt.savefig(f"{res_path}/{y_metric}_per_{x_metric}.pdf")
     plt.close()
 
-def plot(project_name, run_names, x_metric, y_metric, plot_name, res_path, num_markers=8):
+def plot(project_name, run_names, x_metric, y_metric, res_path, num_markers=8):
     api = wandb.Api()
     runs = api.runs(project_name)
     run_name_to_id = {run.name: run.id for run in runs}
@@ -108,30 +107,20 @@ def plot(project_name, run_names, x_metric, y_metric, plot_name, res_path, num_m
 
         plot_mean_std(x_values, y_values_list, color, method_name, marker, num_markers)
 
-    save_plot(res_path, x_metric, y_metric, plot_name, min_max_x_value)
+    save_plot(res_path, x_metric, y_metric, min_max_x_value)
+
 
 if __name__ == '__main__':
     project_name = "pvaldeira-team/efvfl"
-    run_names = [
-        "mnist-fullbatch-svfl-s0",
-        "mnist-fullbatch-svfl-s1",
-        "mnist-fullbatch-svfl-s2",
-        "mnist-fullbatch-svfl-s3",
-        "mnist-fullbatch-svfl-s4",
-        "mnist-fullbatch-cvfl-0.1k-s0",
-        "mnist-fullbatch-cvfl-0.1k-s1",
-        "mnist-fullbatch-cvfl-0.1k-s2",
-        "mnist-fullbatch-cvfl-0.1k-s3",
-        "mnist-fullbatch-cvfl-0.1k-s4",
-        "mnist-fullbatch-efvfl-0.1k-s0",
-        "mnist-fullbatch-efvfl-0.1k-s1",
-        "mnist-fullbatch-efvfl-0.1k-s2",
-        "mnist-fullbatch-efvfl-0.1k-s3",
-        "mnist-fullbatch-efvfl-0.1k-s4",
-    ]
+    
+    experiment = "mnist-fullbatch"
+    methods = ["svfl", "cvfl", "efvfl"]
+    seeds = [0, 1, 2, 3, 4]
+    compressor = "5b"
     x_metric = "comm_cost" # "epoch" | "comm_cost"
     y_metric = "val_acc" # "grad_squared_norm" | "val_acc"
-    plot_name = "MNIST full-batch"
-    res_path = "results/mnist-fullbatch"
 
-    plot(project_name, run_names, x_metric, y_metric, plot_name, res_path)
+    run_names = [f"{experiment}-{method}{'-' + compressor if method != 'svfl' else ''}-s{seed}"
+        for method in methods for seed in seeds]
+
+    plot(project_name, run_names, x_metric, y_metric, res_path=f"results/{experiment}")
