@@ -23,10 +23,10 @@ Next, activate the environment:
 conda activate EFVFL
 ```
 
-Lastly, to run an experiment, simply run the following command, changing the path to the config file accordingly:
+Lastly, to run an experiment, simply run main.py with the appropriate arguments. For example:
 
 ```bash
-python main.py --config mnist_fullbatch/svfl.yaml --gpu 0 --seeds 0
+python main.py --config mnist_fullbatch/svfl.yaml --gpu 0 --seeds 0 1 2 3 4
 ```
 
 ### Citation
