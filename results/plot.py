@@ -3,6 +3,7 @@ import re
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
+import argparse
 import os
 
 COMPRESSOR_COLOR_MAP = {None: 'blue', 'direct': 'orange', 'ef': 'green'}
@@ -22,10 +23,10 @@ def fetch_run_data(api, project_name, run_name, x_metric, y_metric):
     x_values = history[x_metric].values
     y_values = history[y_metric].values
 
-    x_values, y_values = clean_data(x_metric, x_values, y_values)
+    x_values, y_values = clean_data(x_metric, x_values, y_metric, y_values)
     return run.config.get('compression_type'), x_values, y_values
 
-def clean_data(x_metric, x_values, y_values):
+def clean_data(x_metric, x_values, y_metric, y_values):
     if x_metric == "comm_cost":
         x_values[0] = 0.0
         x_values = x_values[~np.isnan(x_values)]
@@ -57,7 +58,7 @@ def group_runs_by_base_name(run_names, run_name_to_id, api, project_name, x_metr
 
     return runs_data, base_name_compression_type_map
 
-def plot_mean_std(x_values, y_values_list, color, method_name, marker, num_markers):
+def plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker, num_markers):
     y_values_array = np.array(y_values_list)
     if y_metric in ["grad_squared_norm", "train_loss", "val_loss"]:
         y_values_array = np.log10(y_values_array)
@@ -105,22 +106,23 @@ def plot(project_name, run_names, x_metric, y_metric, res_path, num_markers=8):
         method_name = COMPRESSOR_METHOD_MAP[compression_type]
         marker = COMPRESSOR_MARKER_MAP[compression_type]
 
-        plot_mean_std(x_values, y_values_list, color, method_name, marker, num_markers)
+        plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker, num_markers)
 
     save_plot(res_path, x_metric, y_metric, min_max_x_value)
 
 
 if __name__ == '__main__':
-    project_name = "pvaldeira-team/efvfl"
-    
-    experiment = "mnist-fullbatch"
-    methods = ["svfl", "cvfl", "efvfl"]
-    seeds = [0, 1, 2, 3, 4]
-    compressor = "5b"
-    x_metric = "comm_cost" # "epoch" | "comm_cost"
-    y_metric = "val_acc" # "grad_squared_norm" | "val_acc"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--project_name', type=str, default="pvaldeira-team/efvfl", help="Project name in wandb")
+    parser.add_argument('--methods', type=str, nargs='+', default=["svfl", "cvfl", "efvfl"])
+    parser.add_argument('--experiment', type=str, default="mnist-fullbatch")
+    parser.add_argument('--seeds', type=int, nargs='+', default=[0, 1, 2, 3, 4])
+    parser.add_argument('--compressor', type=str, default="5b")
+    parser.add_argument('--x_metric', type=str, choices=["epoch", "comm_cost"], default="epoch")
+    parser.add_argument('--y_metric', type=str, choices=["grad_squared_norm", "val_acc"], default="grad_squared_norm")
+    args = parser.parse_args()
 
-    run_names = [f"{experiment}-{method}{'-' + compressor if method != 'svfl' else ''}-s{seed}"
-        for method in methods for seed in seeds]
+    run_names = [f"{args.experiment}-{method}{'-' + args.compressor if method != 'svfl' else ''}-s{seed}"
+                 for method in args.methods for seed in args.seeds]
 
-    plot(project_name, run_names, x_metric, y_metric, res_path=f"results/{experiment}")
+    plot(args.project_name, run_names, args.x_metric, args.y_metric, res_path=f"results/{args.experiment}")

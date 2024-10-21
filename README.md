@@ -23,11 +23,19 @@ Next, activate the environment:
 conda activate EFVFL
 ```
 
-Lastly, to run an experiment, simply run main.py with the appropriate arguments. For example:
+To run an experiment, simply run main.py with the appropriate arguments. For example:
 
 ```bash
 python main.py --config mnist_fullbatch/svfl.yaml --gpu 0 --seeds 0 1 2 3 4
 ```
+
+Lastly, to plot the results, run the following command:
+
+```bash
+python results/plot.py --project_name WANDB_PROJECT --experiment mnist-fullbatch --methods svfl
+```
+
+Replace WANDB_PROJECT with the appropriate configuration, such as [your-wandb-name]/efvfl.
 
 ### Citation
 
