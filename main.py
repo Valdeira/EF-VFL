@@ -1,4 +1,3 @@
-import ast
 import yaml
 import pytorch_lightning as L
 from pytorch_lightning import Trainer
@@ -74,6 +73,12 @@ if __name__ == "__main__":
 
     main(args)
 
-# TODO plot train and validation metrics; use test metrics for table.
+# TODO
+# [X] plot train and validation metrics
+# [] use test metrics for table
+# [] compute metrics at iteration 0
+# [] finish and polish plot.py
+# [] polish main
+# [] avoid checkpoints
+# [] make repo public
 # [] include "metrics to compute" argument in config -> in particular: we only care about computing sqd gd norm for mnist_fullbatch experiments
-# TODO understand why compressed train metrics outperform noncompressed ones
