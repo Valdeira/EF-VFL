@@ -16,6 +16,8 @@ def main(args):
 
     with open("configs/" + args.config, 'r') as config_file:
         config = yaml.safe_load(config_file)
+    config['gpu'] = args.gpu
+    config['seeds'] = args.seeds
 
     for seed in args.seeds:
         L.seed_everything(seed)
