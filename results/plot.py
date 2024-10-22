@@ -12,7 +12,7 @@ COMPRESSOR_METHOD_MAP = {None: 'SVFL', 'direct': 'CVFL', 'ef': 'EF-VFL'}
 METRICS_MAP = {
     "epoch": "Epoch",
     "comm_cost": "Communications (MB)",
-    "grad_squared_norm": "(log) Train gradient squared norm",
+    "grad_squared_norm": "Train gradient squared norm",
     "val_acc": "Validation accuracy (%)",
 }
 
@@ -69,20 +69,20 @@ def plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker,
     plt.plot(x_values, y_mean, label=method_name, marker=marker, markevery=marker_indices)
     plt.fill_between(x_values, y_mean - y_std, y_mean + y_std, color=color, alpha=0.2)
 
-def save_plot(res_path, x_metric, y_metric, min_max_x_value):
+def save_plot(res_path, x_metric, y_metric, min_max_x_value, compressor):
     plt.xlim(left=0, right=min_max_x_value)
-    plt.xlabel(METRICS_MAP[x_metric], fontsize=16)
-    plt.ylabel(METRICS_MAP[y_metric], fontsize=16)
-    plt.legend(loc='best', fontsize=15)
+    plt.xlabel(METRICS_MAP[x_metric], fontsize=18)
+    plt.ylabel(METRICS_MAP[y_metric], fontsize=18)
+    plt.legend(loc='best', fontsize=18)
     plt.grid(True)
-    plt.tick_params(axis='both', which='major', labelsize=14)
+    plt.tick_params(axis='both', which='major', labelsize=16)
     plt.tight_layout()
     if y_metric in ["grad_squared_norm", "train_loss", "val_loss"]:
         plt.gca().yaxis.set_major_formatter(StrMethodFormatter(r'$10^{{{x:.1f}}}$'))
-    plt.savefig(f"{res_path}/{y_metric}_per_{x_metric}.pdf")
+    plt.savefig(f"{res_path}/{compressor}_{y_metric}_per_{x_metric}.pdf")
     plt.close()
 
-def plot(project_name, run_names, x_metric, y_metric, res_path, num_markers=8):
+def plot(project_name, run_names, x_metric, y_metric, compressor, res_path, num_markers=8):
     api = wandb.Api()
     runs = api.runs(project_name)
     run_name_to_id = {run.name: run.id for run in runs}
@@ -108,7 +108,7 @@ def plot(project_name, run_names, x_metric, y_metric, res_path, num_markers=8):
 
         plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker, num_markers)
 
-    save_plot(res_path, x_metric, y_metric, min_max_x_value)
+    save_plot(res_path, x_metric, y_metric, min_max_x_value, compressor)
 
 
 if __name__ == '__main__':
@@ -117,12 +117,12 @@ if __name__ == '__main__':
     parser.add_argument('--methods', type=str, nargs='+', default=["svfl", "cvfl", "efvfl"])
     parser.add_argument('--experiment', type=str, default="mnist-fullbatch")
     parser.add_argument('--seeds', type=int, nargs='+', default=[0, 1, 2, 3, 4])
-    parser.add_argument('--compressor', type=str, default="5b")
-    parser.add_argument('--x_metric', type=str, choices=["epoch", "comm_cost"], default="epoch")
-    parser.add_argument('--y_metric', type=str, choices=["grad_squared_norm", "val_acc"], default="grad_squared_norm")
+    parser.add_argument('--compressor', type=str, default="0.1k")
+    parser.add_argument('--x_metric', type=str, choices=["epoch", "comm_cost"], default="comm_cost")
+    parser.add_argument('--y_metric', type=str, choices=["grad_squared_norm", "val_acc"], default="val_acc")
     args = parser.parse_args()
 
     run_names = [f"{args.experiment}-{method}{'-' + args.compressor if method != 'svfl' else ''}-s{seed}"
                  for method in args.methods for seed in args.seeds]
 
-    plot(args.project_name, run_names, args.x_metric, args.y_metric, res_path=f"results/{args.experiment}")
+    plot(args.project_name, run_names, args.x_metric, args.y_metric, args.compressor, res_path=f"results/{args.experiment}")
