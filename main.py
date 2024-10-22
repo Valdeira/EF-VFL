@@ -32,9 +32,7 @@ def main(args):
         else:
             wandb_logger = None
 
-        data_module_path = config["data"]["module_path"]
-        data_module_name = config["data"]["module_name"]
-        data_module_class = load_module(data_module_path, data_module_name)
+        data_module_class = load_module(config["data"]["module_path"], config["data"]["module_name"])
         data_module = data_module_class(**config["data"]["params"])
 
         data_module.prepare_data()
@@ -43,9 +41,7 @@ def main(args):
         num_samples = data_module.num_train_samples
         batch_size = data_module.train_dataloader().batch_size
 
-        model_module_path = config["model"]["module_path"]
-        model_module_name = config["model"]["module_name"]
-        model_class = load_module(model_module_path, model_module_name)
+        model_class = load_module(config["model"]["module_path"], config["model"]["module_name"])
         model = model_class(**config["model"]["params"], num_samples=num_samples, batch_size=batch_size)
 
         trainer = Trainer(
@@ -65,7 +61,7 @@ def main(args):
 if __name__ == "__main__":
     
     parser = ArgumentParser()
-    parser.add_argument("--config", type=str, default="mnist_fullbatch/svfl.yaml", help="Path to the config file for an experiment.")
+    parser.add_argument("--config", type=str, default="mnist_fullbatch/svfl.yaml", help="The config file for the experiment.")
     parser.add_argument('--gpu', type=lambda s: [int(s)], required=True, help='GPU device id.')
     parser.add_argument('--seeds', type=int, nargs='+', help='List of seed values', required=True)
     parser.add_argument("--no_wandb", action="store_true", help="Disable wandb logging.")
