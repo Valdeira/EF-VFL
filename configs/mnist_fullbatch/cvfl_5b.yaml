@@ -23,6 +23,7 @@ model:
     compression_type: "direct"
     compressor: "qsgd"
     compression_parameter: 5
+    compute_grad_sqd_norm: true
 
 trainer:
   max_epochs: 100

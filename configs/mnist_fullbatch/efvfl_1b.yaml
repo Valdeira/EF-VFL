@@ -23,6 +23,7 @@ model:
     compression_type: "ef"
     compressor: "qsgd"
     compression_parameter: 1
+    compute_grad_sqd_norm: true
 
 trainer:
   max_epochs: 100

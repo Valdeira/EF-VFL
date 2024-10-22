@@ -20,6 +20,7 @@ model:
     num_classes: 10
     lr: 100.0
     momentum: 0.0
+    compute_grad_sqd_norm: true
 
 trainer:
   max_epochs: 100
