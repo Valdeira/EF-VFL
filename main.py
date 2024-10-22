@@ -68,3 +68,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
+
+# TODO
+# [] implement CIFAR10DataModule in data/cifar10.py
+# [] implement ResNetSplitNN in models/cifar10_model.py
+# [] change configs/cifar10/svfl.yaml
+# [] in data/cifar10.py, match cifar10_transform to those used in paper
