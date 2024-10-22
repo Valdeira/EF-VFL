@@ -5,7 +5,7 @@ from torchmetrics import Accuracy
 
 
 class SplitNN(L.LightningModule):
-    def __init__(self, representation_models, fusion_model, lr, momentum, private_labels, batch_size):
+    def __init__(self, representation_models, fusion_model, lr, momentum, private_labels, batch_size, compute_grad_sqd_norm=False):
         super().__init__()
         self.save_hyperparameters()
         self.automatic_optimization = False
@@ -19,6 +19,7 @@ class SplitNN(L.LightningModule):
         self.train_accuracy = Accuracy(task="multiclass", num_classes=self.fusion_model.num_classes)
         self.val_accuracy = Accuracy(task="multiclass", num_classes=self.fusion_model.num_classes)
         self.test_accuracy = Accuracy(task="multiclass", num_classes=self.fusion_model.num_classes)
+        self.compute_grad_sqd_norm = compute_grad_sqd_norm
 
     def forward(self, x):
         """Uncompressed forward pass"""
@@ -90,25 +91,26 @@ class SplitNN(L.LightningModule):
             train_acc.update(y_train_hat, y_train)
             total_loss += loss.item()
 
-            self.zero_grad()
-            loss.backward()
-
-            grad_squared_norm = 0.0
-            for param in self.parameters():
-                if param.grad is not None:
-                    grad_squared_norm += (param.grad.norm() ** 2).item()
-
-            total_grad_squared_norm += grad_squared_norm
+            if self.compute_grad_sqd_norm:
+                self.zero_grad()
+                loss.backward()
+                grad_squared_norm = 0.0
+                for param in self.parameters():
+                    if param.grad is not None:
+                        grad_squared_norm += (param.grad.norm() ** 2).item()
+                total_grad_squared_norm += grad_squared_norm
 
         avg_loss = total_loss / len(self.trainer.train_dataloader)
         train_acc_value = train_acc.compute()
-        if self.current_epoch == 0:
-            self.initial_grad_norm = total_grad_squared_norm
-        total_grad_squared_norm /= self.initial_grad_norm
+        
+        if self.compute_grad_sqd_norm:
+            if self.current_epoch == 0:
+                self.initial_grad_norm = total_grad_squared_norm
+            total_grad_squared_norm /= self.initial_grad_norm
+            self.log("grad_squared_norm", total_grad_squared_norm, on_epoch=True, prog_bar=True)
         
         self.log("train_loss", avg_loss, on_epoch=True, prog_bar=True)
         self.log("train_acc", train_acc_value, on_epoch=True, prog_bar=True)
-        self.log("grad_squared_norm", total_grad_squared_norm, on_epoch=True, prog_bar=True)
 
     def validation_step(self, batch, batch_idx):
         x, y, _ = batch
