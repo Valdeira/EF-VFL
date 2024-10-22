@@ -22,4 +22,4 @@ model:
     momentum: 0.0
 
 trainer:
-  max_epochs: 1 # 100
+  max_epochs: 100
