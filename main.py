@@ -69,14 +69,12 @@ if __name__ == "__main__":
 
     main(args)
 
-# TODO commit "created SplitNN class inherited by mnist_model.py"
-# TODO adjust SplitNN s.t. sqd norm of gd is optional [include "metrics to compute" argument in config]
-# TODO commit "made the computation and logging of the squared norm of the gradient optional"
+
 # TODO implement ResNetSplitNN in models/cifar10_model.py leveraging SplitNN in splitnn.py
 #   [] add weight_decay argument
 # TODO commit "implemented the cifar10"
 # TODO change configs/cifar10/svfl.yaml
 # TODO in data/cifar10.py, match cifar10_transform to those used in paper
 # TODO commit "matched the parameters of the cifar10 experiment"
-# [] currently SplitNN is specific to cross_entropy and SGD (I think this holds for all our exps, but should be generalized)
-# [] add option to skip the logging of uncompressed training metrics (in on_train_epoch_end)?
+# TODO currently SplitNN is specific to cross_entropy and SGD (I think this holds for all our exps, but should be generalized)
+# TODO add option to skip the logging of uncompressed training metrics (in on_train_epoch_end)?
