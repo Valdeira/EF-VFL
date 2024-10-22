@@ -65,15 +65,14 @@ def plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker,
     y_mean = np.mean(y_values_array, axis=0)
     y_std = np.std(y_values_array, axis=0)
 
-    marker_indices = np.linspace(0, len(x_values) - 1, num_markers, dtype=int)
-    plt.plot(x_values, y_mean, label=method_name, marker=marker, markevery=marker_indices)
-    plt.fill_between(x_values, y_mean - y_std, y_mean + y_std, color=color, alpha=0.2)
+    plt.plot(x_values, y_mean, label=method_name, marker=marker, markersize=8, markevery=.1)
+    plt.fill_between(x_values, y_mean - y_std, y_mean + y_std, color=color, alpha=0.25)
 
 def save_plot(res_path, x_metric, y_metric, min_max_x_value, compressor):
     plt.xlim(left=0, right=min_max_x_value)
-    plt.xlabel(METRICS_MAP[x_metric], fontsize=18)
-    plt.ylabel(METRICS_MAP[y_metric], fontsize=18)
-    plt.legend(loc='best', fontsize=18)
+    plt.xlabel(METRICS_MAP[x_metric], fontsize=20)
+    plt.ylabel(METRICS_MAP[y_metric], fontsize=20)
+    plt.legend(loc='best', fontsize=17)
     plt.grid(True)
     plt.tick_params(axis='both', which='major', labelsize=16)
     plt.tight_layout()
