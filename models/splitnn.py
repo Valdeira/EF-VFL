@@ -99,6 +99,7 @@ class SplitNN(L.LightningModule):
                     if param.grad is not None:
                         grad_squared_norm += (param.grad.norm() ** 2).item()
                 total_grad_squared_norm += grad_squared_norm
+                self.zero_grad()
 
         avg_loss = total_loss / len(self.trainer.train_dataloader)
         train_acc_value = train_acc.compute()
