@@ -1,0 +1,27 @@
+logging:
+  project_name: "EFVFL"
+  experiment_name: "cifa10-svfl"
+
+data:
+  module_path: "data.mnist"
+  module_name: "CIFAR10DataModule"
+  params:
+    data_dir: "../data"
+    num_workers: 4
+    batch_size: 128
+
+model:
+  module_path: "models.cifar10_model"
+  module_name: "ResNetSplitNN"
+  params:
+    num_clients: 4
+    input_size: 784 # CHANGE
+    cut_size: 128 # CHANGE
+    aggregation_mechanism: "sum" # CHANGE
+    num_classes: 10 # CHANGE
+    lr: 100.0 # CHANGE
+    momentum: 0.0 # CHANGE
+    # add weight_decay
+
+trainer:
+  max_epochs: 100
