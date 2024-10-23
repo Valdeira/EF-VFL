@@ -46,3 +46,5 @@ Thumbs.db
 # Everything in the results folder except plot.py
 results/*
 !results/plot.py
+
+run_multiple.py
