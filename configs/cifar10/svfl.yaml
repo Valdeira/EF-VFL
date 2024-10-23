@@ -15,13 +15,12 @@ model:
   module_name: "ResNetSplitNN"
   params:
     num_clients: 4
-    input_size: 784 # CHANGE
-    cut_size: 128 # CHANGE
-    aggregation_mechanism: "sum" # CHANGE
-    num_classes: 10 # CHANGE
-    lr: 100.0 # CHANGE
-    momentum: 0.0 # CHANGE
-    # add weight_decay
+    cut_size: 1024
+    aggregation_mechanism: "mean"
+    num_classes: 10
+    lr: 0.1
+    momentum: 0.0 # try 0.5
+    weight_decay: 0.0 # try 0.01
     compute_grad_sqd_norm: false
 
 trainer:
