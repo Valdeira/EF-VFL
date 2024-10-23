@@ -1,13 +1,7 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import pytorch_lightning as L
-from torchmetrics import Accuracy
-from models.compressors import EFCompressor, TopKCompressor, QSGDCompressor
 from models.splitnn import SplitNN
-
-
-compressors_d = {"topk": TopKCompressor, "qsgd": QSGDCompressor}
+from models.compressors import CompressionModule
 
 
 class RepresentationModel(nn.Module):
@@ -18,25 +12,14 @@ class RepresentationModel(nn.Module):
         self.compressor = compressor
         self.compression_parameter = compression_parameter
         self.compression_type = compression_type
-        if compressor is None:
-            self.compression_layer = None
-        else:
-            if compression_parameter is None:
-                raise ValueError("compression_parameter must be provided when a compressor is.")
-            elif compression_type is None:
-                raise ValueError("compression_type must be provided when a compressor is.")
-            elif compression_type == "direct":
-                self.compression_layer = compressors_d[compressor](compression_parameter)
-            elif compression_type == "ef":
-                self.compression_layer = EFCompressor(compressors_d[compressor](compression_parameter), (num_samples, cut_size))
+
+        compressor_parameters = compressor, compression_parameter, compression_type, num_samples, cut_size
+        self.compression_module = CompressionModule(*compressor_parameters) if compressor is not None else None
 
     def forward(self, x, apply_compression=False, indices=None, epoch=None):
         x = self.sigmoid(self.fc(x))
-        if apply_compression and self.compression_layer is not None:
-            if self.compression_type == "direct":
-                x = self.compression_layer(x)
-            elif self.compression_type == "ef":
-                x = self.compression_layer(x, indices, epoch)
+        if self.compression_module is not None:
+            x = self.compression_module.apply_compression(x, apply_compression, indices, epoch)
         return x
 
 
@@ -69,7 +52,6 @@ class ShallowSplitNN(SplitNN):
 
         fusion_model_parameters = cut_size, num_classes, aggregation_mechanism, num_clients
         fusion_model = FusionModel(*fusion_model_parameters)
-        # compute_grad_sqd_norm: true
         super().__init__(representation_models, fusion_model, lr, momentum, private_labels, batch_size, compute_grad_sqd_norm)
     
     def get_feature_block(self, x, i):
