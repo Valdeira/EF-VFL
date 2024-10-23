@@ -80,4 +80,3 @@ if __name__ == "__main__":
 # TODO commit "matched the parameters of the cifar10 experiment"
 
 # TODO currently SplitNN is specific to cross_entropy and SGD (I think this holds for all our exps, but should be generalized)
-# TODO add option to skip the logging of uncompressed training metrics (in on_train_epoch_end)?
