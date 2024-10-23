@@ -5,7 +5,8 @@ from torchmetrics import Accuracy
 
 
 class SplitNN(L.LightningModule):
-    def __init__(self, representation_models, fusion_model, lr, momentum, private_labels, batch_size, compute_grad_sqd_norm=False):
+    def __init__(self, representation_models, fusion_model, lr, momentum, weight_decay,
+                private_labels, batch_size, compute_grad_sqd_norm=False):
         super().__init__()
         self.save_hyperparameters()
         self.automatic_optimization = False
@@ -132,9 +133,9 @@ class SplitNN(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        client_optimizers = [torch.optim.SGD(model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum)
+        client_optimizers = [torch.optim.SGD(model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
                             for model in self.representation_models]
-        fusion_optimizer = torch.optim.SGD(self.fusion_model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum)
+        fusion_optimizer = torch.optim.SGD(self.fusion_model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
         return client_optimizers + [fusion_optimizer]
 
     def get_feature_block(self):
