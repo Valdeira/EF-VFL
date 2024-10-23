@@ -18,7 +18,7 @@ model:
     cut_size: 128
     aggregation_mechanism: "sum"
     num_classes: 10
-    lr: 100.0
+    lr: 1.0
     momentum: 0.0
     compression_type: "ef"
     compressor: "qsgd"
