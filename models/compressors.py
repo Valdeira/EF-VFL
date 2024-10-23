@@ -69,3 +69,36 @@ class QSGDCompressor(nn.Module):
     
     def _backward_hook(self, module, grad_input, grad_output):
         return (grad_output[0],)
+
+
+compressors_d = {"topk": TopKCompressor, "qsgd": QSGDCompressor}
+
+
+class CompressionModule(nn.Module):
+    def __init__(self, compressor=None, compression_parameter=None, compression_type=None, num_samples=None, cut_size=None):
+        super().__init__()
+        self.compressor = compressor
+        self.compression_parameter = compression_parameter
+        self.compression_type = compression_type
+        self.num_samples = num_samples
+        self.cut_size = cut_size
+
+        if compressor is None:
+            self.compression_layer = None
+        else:
+            if compression_parameter is None:
+                raise ValueError("compression_parameter must be provided when a compressor is.")
+            elif compression_type is None:
+                raise ValueError("compression_type must be provided when a compressor is.")
+            elif compression_type == "direct":
+                self.compression_layer = compressors_d[compressor](compression_parameter)
+            elif compression_type == "ef":
+                self.compression_layer = EFCompressor(compressors_d[compressor](compression_parameter), (num_samples, cut_size))
+
+    def apply_compression(self, x, apply_compression=False, indices=None, epoch=None):
+        if apply_compression and self.compression_layer is not None:
+            if self.compression_type == "direct":
+                x = self.compression_layer(x)
+            elif self.compression_type == "ef":
+                x = self.compression_layer(x, indices, epoch)
+        return x
