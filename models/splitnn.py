@@ -6,7 +6,7 @@ from torchmetrics import Accuracy
 
 class SplitNN(L.LightningModule):
     def __init__(self, representation_models, fusion_model, lr, momentum, weight_decay,
-                private_labels, batch_size, compute_grad_sqd_norm=False):
+                private_labels, batch_size, compute_grad_sqd_norm):
         super().__init__()
         self.save_hyperparameters()
         self.automatic_optimization = False

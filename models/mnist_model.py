@@ -5,7 +5,7 @@ from models.compressors import CompressionModule
 
 
 class RepresentationModel(nn.Module):
-    def __init__(self, input_size, cut_size, compressor=None, compression_parameter=None, compression_type=None, num_samples=None):
+    def __init__(self, input_size, cut_size, compressor, compression_parameter, compression_type, num_samples):
         super().__init__()
         self.fc = nn.Linear(input_size, cut_size)
         self.sigmoid = nn.Sigmoid()
@@ -42,10 +42,10 @@ class FusionModel(nn.Module):
 
 
 class ShallowSplitNN(SplitNN):
-    def __init__(self, input_size, cut_size, num_classes, aggregation_mechanism, num_clients, private_labels=False,
-                lr=1.0, momentum=0.0, weight_decay=0.0, compute_grad_sqd_norm=False,
-                compressor=None, compression_parameter=None, compression_type=None, num_samples=None, batch_size=None):
-        
+    def __init__(self, input_size, num_clients, cut_size, aggregation_mechanism, num_classes, private_labels,
+                lr, momentum, weight_decay, compressor, compression_parameter, compression_type,
+                compute_grad_sqd_norm, num_samples, batch_size):
+
         local_input_size = input_size // num_clients
         representation_model_parameters = local_input_size, cut_size, compressor, compression_parameter, compression_type, num_samples
         representation_models = nn.ModuleList([RepresentationModel(*representation_model_parameters) for _ in range(num_clients)])
