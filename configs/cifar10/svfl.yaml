@@ -3,7 +3,7 @@ logging:
   experiment_name: "cifa10-svfl"
 
 data:
-  module_path: "data.mnist"
+  module_path: "data.cifar10"
   module_name: "CIFAR10DataModule"
   params:
     data_dir: "../data"
@@ -18,10 +18,14 @@ model:
     cut_size: 1024
     aggregation_mechanism: "mean"
     num_classes: 10
+    private_labels: false
     lr: 0.1
     momentum: 0.0 # try 0.5
     weight_decay: 0.0 # try 0.01
+    compression_type: null
+    compressor: null
+    compression_parameter: null
     compute_grad_sqd_norm: false
 
 trainer:
-  max_epochs: 100
+  max_epochs: 1 # 100
