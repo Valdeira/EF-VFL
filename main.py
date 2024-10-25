@@ -50,6 +50,7 @@ def main(args):
             accelerator='gpu',
             devices=args.gpu,
             log_every_n_steps=1,
+            enable_checkpointing=False,
         )
         trainer.validate(model, data_module)
         trainer.fit(model, data_module)
@@ -68,3 +69,23 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
+
+
+# TODO mnist_fullbatch hpt
+# [] svfl
+# [] cvfl 0.001k
+# [] efvfl 0.001k
+# [] cvfl 5b
+# [] efvfl 5b
+# [] cvfl 0.01k
+# [] efvfl 0.01k
+# [] cvfl 2b
+# [] efvfl 2b
+# [] cvfl 0.1k
+# [] efvfl 0.1k
+# [] cvfl 1b
+# [] efvfl 1b
+# TODO debug ResNetSplitNN
+# TODO commit "implemented the cifar10 experiment"
+# TODO change configs/cifar10/svfl.yaml
+# TODO commit "matched the parameters of the cifar10 experiment"
