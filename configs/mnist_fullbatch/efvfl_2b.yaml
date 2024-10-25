@@ -19,7 +19,7 @@ model:
     aggregation_mechanism: "sum"
     num_classes: 10
     private_labels: false
-    lr: 256.0
+    lr: 1.0 # was 256.0
     momentum: 0.0
     weight_decay: 0.0
     compression_type: "ef"
