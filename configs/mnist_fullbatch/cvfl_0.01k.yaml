@@ -7,6 +7,7 @@ data:
   module_name: "MNISTDataModule"
   params:
     data_dir: "../data"
+    batch_size: null
     num_workers: 4
 
 model:

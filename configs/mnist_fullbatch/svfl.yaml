@@ -7,6 +7,7 @@ data:
   module_name: "MNISTDataModule"
   params:
     data_dir: "../data"
+    batch_size: null
     num_workers: 4
 
 model:
@@ -19,9 +20,12 @@ model:
     aggregation_mechanism: "sum"
     num_classes: 10
     private_labels: false
-    lr: 16.0 # was 32.0
+    optimizer: "sgd"
+    lr: 64.0
     momentum: 0.0
     weight_decay: 0.0
+    scheduler: null
+    eta_min_ratio: null
     compression_type: null
     compressor: null
     compression_parameter: null
