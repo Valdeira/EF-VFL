@@ -56,9 +56,9 @@ class FusionModel(nn.Module):
 
 
 class ResNetSplitNN(SplitNN):
-    def __init__(self, input_size, cut_size, aggregation_mechanism, num_classes, private_labels: bool,
-                compressor=None, compression_parameter=None, compression_type=None, num_samples=None, batch_size=None, 
-                lr=1.0, momentum=0.0, weight_decay=0.0, num_clients=4, compute_grad_sqd_norm=False):
+    def __init__(self, cut_size, aggregation_mechanism, num_classes, private_labels,
+                compressor, compression_parameter, compression_type, num_samples, batch_size, 
+                lr, momentum, weight_decay, num_clients, compute_grad_sqd_norm):
         
         representation_model_parameters = cut_size, compressor, compression_parameter, compression_type, num_samples
         representation_models = nn.ModuleList([RepresentationModel(*representation_model_parameters) for _ in range(num_clients)])
