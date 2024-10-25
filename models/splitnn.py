@@ -30,8 +30,9 @@ class SplitNN(L.LightningModule):
     def training_step(self, batch):
         x, y, indices = batch
         optimizers = self.optimizers()
-        compressed_representations = [model(self.get_feature_block(x, i), apply_compression=True, indices=indices, epoch=self.current_epoch)
-                                    for i, model in enumerate(self.representation_models)]
+        with torch.no_grad():
+            compressed_representations = [model(self.get_feature_block(x, i), apply_compression=True, indices=indices, epoch=self.current_epoch)
+                                        for i, model in enumerate(self.representation_models)]
 
         if self.hparams.private_labels:
             y_hat = self.fusion_model(compressed_representations)
@@ -49,12 +50,14 @@ class SplitNN(L.LightningModule):
                     mixed_representations[i] = uncompressed_representation
                     output = self.fusion_model(mixed_representations)
                 else: # fusion model
+                    compressed_representations = [rep.detach() for rep in compressed_representations]
                     output = self.fusion_model(compressed_representations)
-            
+
                 loss = F.cross_entropy(output, y)
+                optimizers[i].zero_grad()
+                optimizers[-1].zero_grad()
                 self.manual_backward(loss)
                 optimizers[i].step()
-                optimizers[i].zero_grad()
         
         self.n_mbytes += self._calculate_n_bits(compressed_representations) / 8e6
         self.log('comm_cost', self.n_mbytes, prog_bar=True)
