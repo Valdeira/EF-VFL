@@ -44,7 +44,7 @@ class FusionModel(nn.Module):
 class ShallowSplitNN(SplitNN):
     def __init__(self, input_size, num_clients, cut_size, aggregation_mechanism, num_classes, private_labels,
                 lr, momentum, weight_decay, compressor, compression_parameter, compression_type,
-                optimizer, eta_min_ratio, scheduler,
+                optimizer, eta_min_ratio, scheduler, num_epochs,
                 compute_grad_sqd_norm, num_samples, batch_size):
 
         local_input_size = input_size // num_clients
@@ -55,7 +55,7 @@ class ShallowSplitNN(SplitNN):
         fusion_model = FusionModel(*fusion_model_parameters)
         
         super().__init__(representation_models, fusion_model, lr, momentum, weight_decay, optimizer, eta_min_ratio, scheduler,
-                        private_labels, batch_size, compute_grad_sqd_norm)
+                        num_epochs, private_labels, batch_size, compute_grad_sqd_norm)
     
     def get_feature_block(self, x, i):
         """Get the quadrant i of the input image x."""

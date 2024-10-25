@@ -10,7 +10,7 @@ schedulers_d = {"cosine_annealing_lr": torch.optim.lr_scheduler.CosineAnnealingL
 
 class SplitNN(L.LightningModule):
     def __init__(self, representation_models, fusion_model, lr, momentum, weight_decay,
-                optimizer, eta_min_ratio, scheduler,
+                optimizer, eta_min_ratio, scheduler, num_epochs,
                 private_labels, batch_size, compute_grad_sqd_norm):
         super().__init__()
         self.save_hyperparameters()
@@ -155,7 +155,7 @@ class SplitNN(L.LightningModule):
             return optimizers
         else:
             Scheduler = schedulers_d[self.hparams.scheduler]
-            schedulers = [Scheduler(opt, T_max=self.hparams.t_max, eta_min=self.hparams.lr * self.hparams.eta_min_ratio) for opt in optimizers]
+            schedulers = [Scheduler(opt, T_max=self.hparams.num_epochs, eta_min=self.hparams.lr * self.hparams.eta_min_ratio) for opt in optimizers]
             return optimizers, schedulers
 
 

@@ -42,7 +42,8 @@ def main(args):
         batch_size = data_module.train_dataloader().batch_size
 
         model_class = load_module(config["model"]["module_path"], config["model"]["module_name"])
-        model = model_class(**config["model"]["params"], num_samples=num_samples, batch_size=batch_size)
+        model = model_class(**config["model"]["params"],
+                            num_samples=num_samples, batch_size=batch_size, num_epochs=config["trainer"]["max_epochs"])
 
         trainer = Trainer(
             max_epochs=config["trainer"]["max_epochs"],
@@ -85,6 +86,5 @@ if __name__ == "__main__":
 # [] efvfl 0.001k
 # [] cvfl 1b
 # [] efvfl 1b
-# TODO commit "implemented the cifar10 experiment"
 # TODO change configs/cifar10/svfl.yaml
 # TODO commit "matched the parameters of the cifar10 experiment"
