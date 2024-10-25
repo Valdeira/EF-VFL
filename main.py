@@ -71,21 +71,20 @@ if __name__ == "__main__":
     main(args)
 
 
-# TODO mnist_fullbatch hpt
-# [] svfl
-# [] cvfl 0.001k
-# [] efvfl 0.001k
+# TODO mnist_fullbatch hpt AND add optimizer, scheduler, and eta_min_ratio config file
+# [X] svfl
+# [X] cvfl 0.1k
+# [X] efvfl 0.1k
 # [] cvfl 5b
 # [] efvfl 5b
 # [] cvfl 0.01k
 # [] efvfl 0.01k
 # [] cvfl 2b
 # [] efvfl 2b
-# [] cvfl 0.1k
-# [] efvfl 0.1k
+# [] cvfl 0.001k
+# [] efvfl 0.001k
 # [] cvfl 1b
 # [] efvfl 1b
-# TODO debug ResNetSplitNN
 # TODO commit "implemented the cifar10 experiment"
 # TODO change configs/cifar10/svfl.yaml
 # TODO commit "matched the parameters of the cifar10 experiment"
