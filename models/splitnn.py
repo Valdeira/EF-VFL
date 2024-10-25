@@ -4,8 +4,13 @@ import pytorch_lightning as L
 from torchmetrics import Accuracy
 
 
+optimizers_d = {"sgd": torch.optim.SGD}
+schedulers_d = {"cosine_annealing_lr": torch.optim.lr_scheduler.CosineAnnealingLR}
+
+
 class SplitNN(L.LightningModule):
     def __init__(self, representation_models, fusion_model, lr, momentum, weight_decay,
+                optimizer, eta_min_ratio, scheduler,
                 private_labels, batch_size, compute_grad_sqd_norm):
         super().__init__()
         self.save_hyperparameters()
@@ -39,8 +44,8 @@ class SplitNN(L.LightningModule):
             loss = F.cross_entropy(y_hat, y)
             self.manual_backward(loss)
             for optimizer in optimizers:
-                optimizer.step()
                 optimizer.zero_grad()
+                optimizer.step()
         
         else:
             for i, model in enumerate(self.representation_models):
@@ -81,7 +86,11 @@ class SplitNN(L.LightningModule):
         return n_bits
 
     def on_train_epoch_end(self):
-        """Uncompressed forward pass on training data to compute metrics"""
+        """(lr scheduler step and) uncompressed forward pass on training data to compute metrics"""
+        if self.hparams.scheduler is not None:
+            for scheduler in self.lr_schedulers():
+                scheduler.step()
+
         total_loss = 0.0
         total_grad_squared_norm = 0.0
         train_acc = Accuracy(task="multiclass", num_classes=self.fusion_model.num_classes).to(self.device)
@@ -136,10 +145,19 @@ class SplitNN(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        client_optimizers = [torch.optim.SGD(model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
+        Optimizer = optimizers_d[self.hparams.optimizer]
+        client_optimizers = [Optimizer(model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
                             for model in self.representation_models]
-        fusion_optimizer = torch.optim.SGD(self.fusion_model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
-        return client_optimizers + [fusion_optimizer]
+        fusion_optimizer = Optimizer(self.fusion_model.parameters(), lr=self.hparams.lr, momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
+        optimizers = client_optimizers + [fusion_optimizer]
+
+        if self.hparams.scheduler is None:
+            return optimizers
+        else:
+            Scheduler = schedulers_d[self.hparams.scheduler]
+            schedulers = [Scheduler(opt, T_max=self.hparams.t_max, eta_min=self.hparams.lr * self.hparams.eta_min_ratio) for opt in optimizers]
+            return optimizers, schedulers
+
 
     def get_feature_block(self):
         raise NotImplementedError("Subclasses must implement this method")
