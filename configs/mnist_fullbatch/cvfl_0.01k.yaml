@@ -20,9 +20,12 @@ model:
     aggregation_mechanism: "sum"
     num_classes: 10
     private_labels: false
-    lr: 256.0
+    optimizer: "sgd"
+    lr: 128.0
     momentum: 0.0
     weight_decay: 0.0
+    scheduler: null
+    eta_min_ratio: null
     compression_type: "direct"
     compressor: "topk"
     compression_parameter: 0.01

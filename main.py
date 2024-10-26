@@ -70,21 +70,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
-
-
-# TODO mnist_fullbatch hpt AND add optimizer, scheduler, and eta_min_ratio config file
-# [X] svfl
-# [X] cvfl 0.1k
-# [X] efvfl 0.1k
-# [] cvfl 5b
-# [] efvfl 5b
-# [] cvfl 0.01k
-# [] efvfl 0.01k
-# [] cvfl 2b
-# [] efvfl 2b
-# [] cvfl 0.001k
-# [] efvfl 0.001k
-# [] cvfl 1b
-# [] efvfl 1b
-# TODO change configs/cifar10/svfl.yaml
-# TODO commit "matched the parameters of the cifar10 experiment"
