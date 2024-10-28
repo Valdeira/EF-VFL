@@ -48,3 +48,4 @@ results/*
 !results/plot.py
 
 run_multiple.py
+models/(TODO)splitnn.py
