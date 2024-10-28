@@ -95,7 +95,7 @@ class CompressionModule(nn.Module):
             elif compression_type == "ef":
                 self.compression_layer = EFCompressor(compressors_d[compressor](compression_parameter), (num_samples, cut_size))
 
-    def apply_compression(self, x, apply_compression=False, indices=None, epoch=None):
+    def forward(self, x, apply_compression=False, indices=None, epoch=None):
         if apply_compression and self.compression_layer is not None:
             if self.compression_type == "direct":
                 x = self.compression_layer(x)
