@@ -14,6 +14,7 @@ METRICS_MAP = {
     "comm_cost": "Communications (MB)",
     "grad_squared_norm": "Train gradient squared norm",
     "val_acc": "Validation accuracy (%)",
+    "train_loss": "Train loss",
 }
 
 def fetch_run_data(api, project_name, run_name, x_metric, y_metric):
@@ -58,7 +59,7 @@ def group_runs_by_base_name(run_names, run_name_to_id, api, project_name, x_metr
 
     return runs_data, base_name_compression_type_map
 
-def plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker, num_markers):
+def plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker):
     y_values_array = np.array(y_values_list)
     if y_metric in ["grad_squared_norm", "train_loss", "val_loss"]:
         y_values_array = np.log10(y_values_array)
@@ -81,7 +82,7 @@ def save_plot(res_path, x_metric, y_metric, min_max_x_value, compressor):
     plt.savefig(f"{res_path}/{compressor}_{y_metric}_per_{x_metric}.pdf")
     plt.close()
 
-def plot(project_name, run_names, x_metric, y_metric, compressor, res_path, num_markers=8):
+def plot(project_name, run_names, x_metric, y_metric, compressor, res_path):
     api = wandb.Api()
     runs = api.runs(project_name)
     run_name_to_id = {run.name: run.id for run in runs}
@@ -105,7 +106,7 @@ def plot(project_name, run_names, x_metric, y_metric, compressor, res_path, num_
         method_name = COMPRESSOR_METHOD_MAP[compression_type]
         marker = COMPRESSOR_MARKER_MAP[compression_type]
 
-        plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker, num_markers)
+        plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker)
 
     save_plot(res_path, x_metric, y_metric, min_max_x_value, compressor)
 
@@ -118,7 +119,7 @@ if __name__ == '__main__':
     parser.add_argument('--seeds', type=int, nargs='+', default=[0, 1, 2, 3, 4])
     parser.add_argument('--compressor', type=str, default="0.1k")
     parser.add_argument('--x_metric', type=str, choices=["epoch", "comm_cost"], default="comm_cost")
-    parser.add_argument('--y_metric', type=str, choices=["grad_squared_norm", "val_acc"], default="val_acc")
+    parser.add_argument('--y_metric', type=str, choices=["grad_squared_norm", "val_acc", "train_loss"], default="val_acc")
     args = parser.parse_args()
 
     run_names = [f"{args.experiment}-{method}{'-' + args.compressor if method != 'svfl' else ''}-s{seed}"
