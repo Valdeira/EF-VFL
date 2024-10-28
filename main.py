@@ -3,13 +3,9 @@ import pytorch_lightning as L
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 from argparse import ArgumentParser
-from importlib import import_module
 import wandb
 
-
-def load_module(module_path, module_name):
-    spec = import_module(module_path)
-    return getattr(spec, module_name)
+from utils import load_module
 
 
 def main(args):
@@ -70,3 +66,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
+
+
+# TODO understand how train_loss(svfl) >  train_loss(cvfl), train_loss(efvfl)
+# TODO change cifar10_model representation model according to new changes to mnist_model
