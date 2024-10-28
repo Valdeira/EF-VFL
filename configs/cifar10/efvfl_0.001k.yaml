@@ -1,6 +1,6 @@
 logging:
   project_name: "EFVFL"
-  experiment_name: "cifar10-cvfl-0.1k"
+  experiment_name: "cifar10-efvfl-0.001k"
 
 data:
   module_path: "data.cifar10"
@@ -25,9 +25,9 @@ model:
     weight_decay: 0.008
     scheduler: "cosine_annealing_lr"
     eta_min_ratio: 0.01
-    compression_type: "direct"
+    compression_type: "ef"
     compressor: "topk"
-    compression_parameter: 0.1
+    compression_parameter: 0.001
     compute_grad_sqd_norm: false
 
 trainer:
