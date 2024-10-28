@@ -3,7 +3,7 @@ import torch.nn as nn
 import torchvision.models
 from torchvision.models.resnet import BasicBlock
 
-from models.splitnn import SplitNN
+from models.lightning_splitnn import SplitNN
 from models.compressors import CompressionModule
 
 
@@ -22,19 +22,12 @@ class RepresentationModel(nn.Module):
         self.resnet18.layer3 = self.resnet18._make_layer(BasicBlock, 128, 2, stride=2)
         self.resnet18.layer4 = self.resnet18._make_layer(BasicBlock, 256, 2, stride=2)
         self.resnet18.fc = nn.Linear(256 * BasicBlock.expansion, cut_size)
-        
-        self.compressor = compressor
-        self.compression_parameter = compression_parameter
-        self.compression_type = compression_type
 
-        compressor_parameters = compressor, compression_parameter, compression_type, num_samples, cut_size
-        self.compression_module = CompressionModule(*compressor_parameters) if compressor is not None else None
+        self.compression_module = CompressionModule(compressor, compression_parameter, compression_type, num_samples, cut_size)
     
     def forward(self, x, apply_compression=False, indices=None, epoch=None):
         x = self.resnet18(x)
-        if self.compression_module is not None:
-            x = self.compression_module.apply_compression(x, apply_compression, indices, epoch)
-        return x
+        return self.compression_module(x, apply_compression, indices, epoch)
 
 
 class FusionModel(nn.Module):

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from models.splitnn import SplitNN
+from models.lightning_splitnn import SplitNN
 from models.compressors import CompressionModule
 
 
@@ -9,18 +9,11 @@ class RepresentationModel(nn.Module):
         super().__init__()
         self.fc = nn.Linear(input_size, cut_size)
         self.sigmoid = nn.Sigmoid()
-        self.compressor = compressor
-        self.compression_parameter = compression_parameter
-        self.compression_type = compression_type
-
-        compressor_parameters = compressor, compression_parameter, compression_type, num_samples, cut_size
-        self.compression_module = CompressionModule(*compressor_parameters) if compressor is not None else None
+        self.compression_module = CompressionModule(compressor, compression_parameter, compression_type, num_samples, cut_size)
 
     def forward(self, x, apply_compression=False, indices=None, epoch=None):
         x = self.sigmoid(self.fc(x))
-        if self.compression_module is not None:
-            x = self.compression_module.apply_compression(x, apply_compression, indices, epoch)
-        return x
+        return self.compression_module(x, apply_compression, indices, epoch)
 
 
 class FusionModel(nn.Module):
@@ -50,7 +43,7 @@ class ShallowSplitNN(SplitNN):
         local_input_size = input_size // num_clients
         representation_model_parameters = local_input_size, cut_size, compressor, compression_parameter, compression_type, num_samples
         representation_models = nn.ModuleList([RepresentationModel(*representation_model_parameters) for _ in range(num_clients)])
-
+        
         fusion_model_parameters = cut_size, num_classes, aggregation_mechanism, num_clients
         fusion_model = FusionModel(*fusion_model_parameters)
         
