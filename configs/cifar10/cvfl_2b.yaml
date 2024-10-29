@@ -21,10 +21,10 @@ model:
     private_labels: false
     optimizer: "sgd"
     lr: 0.01
-    momentum: 0.0 # was 0.5
+    momentum: 0.0
     weight_decay: 0.01
-    scheduler: null # was "cosine_annealing_lr"
-    eta_min_ratio: null # 0.01
+    scheduler: null
+    eta_min_ratio: null
     compression_type: "direct"
     compressor: "qsgd"
     compression_parameter: 2

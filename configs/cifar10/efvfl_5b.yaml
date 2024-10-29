@@ -15,16 +15,16 @@ model:
   module_name: "ResNetSplitNN"
   params:
     num_clients: 4
-    cut_size: 256
+    cut_size: 16
     aggregation_mechanism: "mean"
     num_classes: 10
     private_labels: false
     optimizer: "sgd"
     lr: 0.01
-    momentum: 0.5
-    weight_decay: 0.008
-    scheduler: "cosine_annealing_lr"
-    eta_min_ratio: 0.01
+    momentum: 0.0
+    weight_decay: 0.01
+    scheduler: null
+    eta_min_ratio: null
     compression_type: "ef"
     compressor: "qsgd"
     compression_parameter: 5

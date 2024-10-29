@@ -16,12 +16,12 @@ model:
   params:
     input_size: 784
     num_clients: 4
-    cut_size: 128
-    aggregation_mechanism: "sum"
+    cut_size: 16
+    aggregation_mechanism: "mean"
     num_classes: 10
     private_labels: false
     optimizer: "sgd"
-    lr: 128.0
+    lr: 4.0
     momentum: 0.0
     weight_decay: 0.0
     scheduler: null
