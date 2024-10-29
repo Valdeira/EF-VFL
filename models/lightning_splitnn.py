@@ -48,8 +48,8 @@ class SplitNN(L.LightningModule):
                 optimizer.step()
         
         else:
-            for i, model in enumerate(self.representation_models):
-                if i < len(self.representation_models) - 1: # representation model
+            for i, model in enumerate(self.representation_models + [self.fusion_model]):
+                if i < self.num_clients: # representation model
                     uncompressed_representation = model(self.get_feature_block(x, i), apply_compression=False)
                     mixed_representations = [rep.detach() for rep in compressed_representations]
                     mixed_representations[i] = uncompressed_representation
