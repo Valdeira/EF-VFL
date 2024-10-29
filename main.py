@@ -66,7 +66,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
-
-
-# TODO understand how train_loss(svfl) >  train_loss(cvfl), train_loss(efvfl)
-# TODO change cifar10_model representation model according to new changes to mnist_model
