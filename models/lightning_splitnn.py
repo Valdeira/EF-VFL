@@ -65,7 +65,6 @@ class SplitNN(L.LightningModule):
                 optimizers[i].step()
         
         self.n_mbytes += self._calculate_n_bits(compressed_representations) / 8e6
-        self.log('comm_cost', self.n_mbytes, prog_bar=True)
 
     def _calculate_n_bits(self, compressed_representations):
         """assuming compressor and compression_parameter do not vary across representation_models"""
@@ -125,6 +124,7 @@ class SplitNN(L.LightningModule):
         
         self.log("train_loss", avg_loss, on_epoch=True, prog_bar=True)
         self.log("train_acc", train_acc_value, on_epoch=True, prog_bar=True)
+        self.log('comm_cost', self.n_mbytes, on_epoch=True, prog_bar=True)
 
     def validation_step(self, batch, batch_idx):
         x, y, _ = batch
@@ -133,6 +133,7 @@ class SplitNN(L.LightningModule):
         self.val_accuracy.update(y_hat, y)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)
         self.log("val_acc", self.val_accuracy, on_epoch=True, prog_bar=True)
+        self.log('comm_cost', self.n_mbytes, on_epoch=True, prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -142,6 +143,7 @@ class SplitNN(L.LightningModule):
         self.test_accuracy.update(y_hat, y)
         self.log("test_loss", loss, on_epoch=True, prog_bar=True)
         self.log("test_acc", self.test_accuracy, on_epoch=True, prog_bar=True)
+        self.log('comm_cost', self.n_mbytes, on_epoch=True, prog_bar=True)
         return loss
 
     def configure_optimizers(self):

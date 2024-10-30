@@ -19,24 +19,12 @@ METRICS_MAP = {
 
 def fetch_run_data(api, project_name, run_name, x_metric, y_metric):
     run = api.run(f"{project_name}/{run_name}")
-    history = run.history()
+    history = run.history(keys=[x_metric, y_metric]) # assert no sampling?
 
     x_values = history[x_metric].values
     y_values = history[y_metric].values
-
-    x_values, y_values = clean_data(x_metric, x_values, y_metric, y_values)
+    
     return run.config.get('compression_type'), x_values, y_values
-
-def clean_data(x_metric, x_values, y_metric, y_values):
-    if x_metric == "comm_cost":
-        x_values[0] = 0.0
-        x_values = x_values[~np.isnan(x_values)]
-    elif x_metric == "epoch":
-        x_values = x_values[1:-1:3] + 1  # remove initial and final metrics (val and test)
-    y_values = y_values[~np.isnan(y_values)]
-    if y_metric == "val_acc":
-        y_values *= 100
-    return x_values, y_values
 
 def group_runs_by_base_name(run_names, run_name_to_id, api, project_name, x_metric, y_metric):
     pattern = re.compile(r"-s\d+$")
@@ -65,7 +53,7 @@ def plot_mean_std(x_values, y_values_list, y_metric, color, method_name, marker)
         y_values_array = np.log10(y_values_array)
     y_mean = np.mean(y_values_array, axis=0)
     y_std = np.std(y_values_array, axis=0)
-
+    
     plt.plot(x_values, y_mean, label=method_name, marker=marker, markersize=8, markevery=.1)
     plt.fill_between(x_values, y_mean - y_std, y_mean + y_std, color=color, alpha=0.25)
 
