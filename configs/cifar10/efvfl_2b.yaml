@@ -23,8 +23,8 @@ model:
     lr: 0.01
     momentum: 0.0
     weight_decay: 0.01
-    scheduler: null
-    eta_min_ratio: null
+    scheduler: "cosine_annealing_lr"
+    eta_min_ratio: 0.01
     compression_type: "ef"
     compressor: "qsgd"
     compression_parameter: 2
