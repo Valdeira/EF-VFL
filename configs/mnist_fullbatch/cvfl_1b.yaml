@@ -21,7 +21,7 @@ model:
     num_classes: 10
     private_labels: false
     optimizer: "sgd"
-    lr: 4.0
+    lr: 16.0
     momentum: 0.0
     weight_decay: 0.0
     scheduler: null
