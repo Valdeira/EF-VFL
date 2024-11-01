@@ -46,6 +46,7 @@ Thumbs.db
 # Everything in the results folder except plot.py
 results/*
 !results/plot.py
+!results/get_test_metrics.py
 
 run_multiple.py
 models/(TODO)splitnn.py
