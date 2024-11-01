@@ -19,8 +19,8 @@ METRICS_MAP = {
 
 def fetch_run_data(api, project_name, run_name, x_metric, y_metric):
     run = api.run(f"{project_name}/{run_name}")
-    history = run.history(keys=[x_metric, y_metric]) # assert no sampling?
-
+    history = run.history(keys=[x_metric, y_metric])
+    
     x_values = history[x_metric].values
     y_values = history[y_metric].values
     
