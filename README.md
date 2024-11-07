@@ -35,7 +35,7 @@ Lastly, to plot the train and validation metrics, run the following command:
 python results/plot.py --project_name WANDB_PROJECT --experiment mnist-fullbatch --methods svfl
 ```
 
-Replace WANDB_PROJECT with the appropriate configuration, such as [your-wandb-name]/efvfl.
+Replace WANDB_PROJECT with the appropriate configuration, such as [wandb-username]/[wandb-project].
 
 And, to print the test metrics, run the following command:
 
@@ -43,7 +43,7 @@ And, to print the test metrics, run the following command:
 python results/get_test_metrics.py --project_name WANDB_PROJECT --experiment mnist-fullbatch --methods svfl
 ```
 
-As above, replace WANDB_PROJECT with the appropriate configuration, such as [your-wandb-name]/efvfl.
+As above, replace WANDB_PROJECT with the appropriate configuration, such as [wandb-username]/[wandb-project].
 
 ### Note
 
