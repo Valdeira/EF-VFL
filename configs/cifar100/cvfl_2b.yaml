@@ -1,10 +1,10 @@
 logging:
   project_name: "EFVFL"
-  experiment_name: "cifar10-svfl"
+  experiment_name: "cifar100-cvfl-2b"
 
 data:
-  module_path: "data.cifar10"
-  module_name: "CIFAR10DataModule"
+  module_path: "data.cifar100"
+  module_name: "CIFAR100DataModule"
   params:
     data_dir: "../data"
     num_workers: 8
@@ -14,22 +14,22 @@ model:
   module_path: "models.cifar_model"
   module_name: "ResNetSplitNN"
   params:
-    dataset: "cifar10"
+    dataset: "cifar100"
     num_clients: 4
-    cut_size: 16
+    cut_size: 128
     aggregation_mechanism: "mean"
-    num_classes: 10
+    num_classes: 100
     private_labels: false
     optimizer: "sgd"
-    lr: 0.01
+    lr: 0.04
     momentum: 0.0
     weight_decay: 0.01
     scheduler: "cosine_annealing_lr"
     eta_min_ratio: 0.01
-    compression_type: null
-    compressor: null
-    compression_parameter: null
+    compression_type: "direct"
+    compressor: "qsgd"
+    compression_parameter: 2
     compute_grad_sqd_norm: false
 
 trainer:
-  max_epochs: 100
+  max_epochs: 150

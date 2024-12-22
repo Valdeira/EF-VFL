@@ -11,9 +11,10 @@ data:
     batch_size: 128
 
 model:
-  module_path: "models.cifar10_model"
+  module_path: "models.cifar_model"
   module_name: "ResNetSplitNN"
   params:
+    dataset: "cifar10"
     num_clients: 4
     cut_size: 16
     aggregation_mechanism: "mean"
