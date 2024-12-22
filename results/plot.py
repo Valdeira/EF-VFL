@@ -64,9 +64,9 @@ def save_plot(res_path, x_metric, y_metric, min_max_x_value, compressor):
     plt.legend(loc='best', fontsize=17)
     plt.grid(True)
     plt.tick_params(axis='both', which='major', labelsize=16)
-    plt.tight_layout()
     if y_metric in ["grad_squared_norm", "train_loss", "val_loss"]:
         plt.gca().yaxis.set_major_formatter(StrMethodFormatter(r'$10^{{{x:.1f}}}$'))
+    plt.tight_layout()
     plt.savefig(f"{res_path}/{compressor}_{y_metric}_per_{x_metric}.pdf")
     plt.close()
 
