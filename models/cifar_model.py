@@ -43,7 +43,6 @@ class FusionModel(nn.Module):
         self.aggregation_mechanism = aggregation_mechanism
         fusion_input_size = cut_size * num_clients if aggregation_mechanism == "conc" else cut_size
         self.fc = nn.Linear(fusion_input_size, num_classes)
-        # self.fc = nn.Sequential(nn.Linear(fusion_input_size, fusion_input_size), nn.ReLU(), nn.Linear(fusion_input_size, num_classes))
 
     def forward(self, x):
         if self.aggregation_mechanism == "conc":
