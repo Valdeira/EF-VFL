@@ -3,14 +3,15 @@ from torch.utils.data import DataLoader, random_split
 
 
 class DataModule(L.LightningDataModule):
-    def __init__(self, dataset_class, data_dir="../data", batch_size=None, num_workers=4, val_test_split=0.5, transform=None):
+    def __init__(self, dataset_class, data_dir="../data", batch_size=None, num_workers=4, val_test_split=0.5, train_transform=None, test_transform=None):
         super().__init__()
         self.dataset_class = dataset_class
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.val_test_split = val_test_split
-        self.transform = transform
+        self.train_transform = train_transform
+        self.test_transform = test_transform
         self.num_train_samples = None
 
     def prepare_data(self):
@@ -19,11 +20,11 @@ class DataModule(L.LightningDataModule):
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            self.train_dataset = DatasetWithIndex(self.dataset_class(self.data_dir, train=True, transform=self.transform, download=False))
+            self.train_dataset = DatasetWithIndex(self.dataset_class(self.data_dir, train=True, transform=self.train_transform, download=False))
             self.num_train_samples = len(self.train_dataset)
 
         if stage == 'validate' or stage == 'test' or stage is None:
-            test_data = self.dataset_class(self.data_dir, train=False, transform=self.transform, download=False)
+            test_data = self.dataset_class(self.data_dir, train=False, transform=self.test_transform, download=False)
             test_size = int(len(test_data) * self.val_test_split)
             val_size = len(test_data) - test_size
             val_dataset, test_dataset = random_split(test_data, [val_size, test_size])

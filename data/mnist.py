@@ -9,5 +9,6 @@ class MNISTDataModule(DataModule):
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
         ])
-        super().__init__(dataset_class=MNIST, data_dir=data_dir, batch_size=batch_size, num_workers=num_workers, val_test_split=val_test_split, transform=mnist_transform)
+        super().__init__(dataset_class=MNIST, data_dir=data_dir, batch_size=batch_size, num_workers=num_workers, val_test_split=val_test_split,
+                        train_transform=mnist_transform, test_transform=mnist_transform)
 
